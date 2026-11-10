@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Física y Química · 2º ESO</title>
+<meta name="description" content="Apuntes, juegos y ejercicios de Física y Química para 2º ESO.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f8fc; --surface:#fff; --ink:#172033; --muted:#566074; --line:#e0e4ee; --soft:#eef1f8;
+  --blue:#0055cc; --green:#167a3b; --orange:#c84800; --amber:#8a5900;
+  --f-title:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f-text:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--f-text);background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-title);margin:0;line-height:1.15;letter-spacing:-.01em}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+
+/* Cabecera */
+.hero{background:linear-gradient(160deg,#eaf0ff 0%,#f5f1ff 50%,#ebf8f1 100%);border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.hero .wrap{padding-top:44px;padding-bottom:40px;position:relative;z-index:1}
+.hero svg.deco{position:absolute;right:-30px;top:-20px;width:320px;height:320px;opacity:.28;z-index:0}
+.kicker{display:inline-block;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:#fff;border:1px solid #cfdcf3;border-radius:999px;padding:4px 12px}
+.hero h1{font-size:clamp(30px,5vw,46px);margin-top:14px}
+.hero p{color:var(--muted);font-size:17px;max-width:620px;margin:10px 0 0}
+
+/* Unidades */
+main{padding:32px 0 48px}
+.unit{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(20,30,60,.05),0 6px 18px rgba(20,30,60,.06);padding:24px;margin-bottom:20px}
+.unit-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.unit-num{font-family:var(--f-title);font-weight:700;color:#fff;background:var(--blue);border-radius:10px;padding:2px 10px;font-size:15px}
+.unit-head h2{font-size:24px}
+.sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.section h3{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section h3 svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.item{display:flex;gap:14px;align-items:center;text-decoration:none;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s;min-height:44px}
+a.item:hover{border-color:#9db9e6;box-shadow:0 6px 16px rgba(0,85,204,.12);transform:translateY(-2px)}
+.item .ico{width:52px;height:52px;flex:none;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 32% 28%,#4b84e0 0,#0055cc 60%,#002f73 100%);color:#fff;font-family:var(--f-title);font-weight:700;font-size:20px;position:relative}
+.item .ico::after{content:"";position:absolute;left:-7px;right:-7px;top:50%;height:12px;margin-top:-6px;border-radius:50%;border:2px solid rgba(200,72,0,.75);transform:rotate(-18deg)}
+.item b{display:block;font-family:var(--f-title);font-size:17px}
+.item small{color:var(--muted);font-size:13px}
+.item .go{margin-left:auto;font-weight:700;color:var(--blue);white-space:nowrap}
+.soon{padding:14px;border-radius:14px;border:2px dashed var(--line);color:var(--muted);font-size:14px}
+footer{color:var(--muted);font-size:13px;text-align:center;padding:0 0 32px}
+@media (max-width:860px){.sections{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <svg class="deco" viewBox="-50 -50 100 100" aria-hidden="true">
+    <g fill="none" stroke="#0055cc" stroke-width="1.4">
+      <ellipse rx="44" ry="15"/><ellipse rx="44" ry="15" transform="rotate(60)"/><ellipse rx="44" ry="15" transform="rotate(120)"/>
+    </g>
+    <circle r="8" fill="#0055cc"/><circle cx="44" r="3.5" fill="#c84800"/><circle cx="-22" cy="-38" r="3.5" fill="#167a3b" transform="rotate(0)"/>
+  </svg>
+  <div class="wrap">
+    <span class="kicker">2º ESO</span>
+    <h1>Física y Química</h1>
+    <p>Apuntes, juegos y ejercicios de cada unidad. Elige la unidad y lo que quieras repasar.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="unit" aria-labelledby="u3">
+    <div class="unit-head"><span class="unit-num">Unidad 3</span><h2 id="u3">La tabla periódica</h2></div>
+    <div class="sections">
+      <div class="section">
+        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="12" rx="4"/><path d="M8 11v4M6 13h4M15 12h.01M17 14h.01"/></svg>Juegos</h3>
+        <a class="item" href="juegos/periodic-game.html">
+          <span class="ico" aria-hidden="true">Na</span>
+          <span><b>Periodic game</b><small>Grupos, nombres y símbolos de los elementos representativos</small></span>
+          <span class="go" aria-hidden="true">Jugar →</span>
+        </a>
+      </div>
+      <div class="section">
+        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h6M8 11h6"/></svg>Apuntes</h3>
+        <p class="soon">Próximamente</p>
+      </div>
+      <div class="section">
+        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Ejercicios</h3>
+        <p class="soon">Próximamente</p>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Física y Química · 2º ESO</footer>
+</body>
+</html>

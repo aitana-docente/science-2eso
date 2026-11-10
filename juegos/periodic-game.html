@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expedición Periódica</title>
+<meta name="description" content="Juego para estudiar los elementos representativos de la tabla periódica (2º ESO).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   1. TOKENS Y BASE
+   ========================================================= */
+:root{
+  --bg:#f7f8fc; --surface:#fff; --ink:#172033; --muted:#566074; --line:#e0e4ee; --soft:#eef1f8;
+  --blue:#0055cc; --green:#167a3b; --orange:#c84800; --amber:#8a5900; --red:#c62828;
+  --r-sm:12px; --r:14px; --r-lg:16px;
+  --shadow:0 1px 2px rgba(20,30,60,.06),0 6px 18px rgba(20,30,60,.07);
+  --f-title:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f-text:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --hdr:58px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--f-text);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-title);letter-spacing:-.01em;margin:0;line-height:1.15}
+h1{font-size:24px} h2{font-size:20px} h3{font-size:17px}
+p{margin:0}
+button{font:inherit;color:inherit}
+[tabindex="-1"]:focus{outline:none}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.muted{color:var(--muted)}
+.sr-only{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+kbd{font-family:var(--f-title);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;background:#fff;color:var(--muted)}
+
+/* Botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:0 16px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s,transform .15s,box-shadow .15s;white-space:nowrap}
+.btn:hover{border-color:#c4cadc;background:#f3f5fb}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#0047ab}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--soft)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg{width:20px;height:20px;flex:none}
+.pill{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:999px;background:var(--soft);font-weight:600;font-size:14px;white-space:nowrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+
+/* Estrellas */
+.stars{display:inline-flex;gap:2px;vertical-align:middle}
+.star{width:18px;height:18px;fill:#d9dde8}
+.star.on{fill:#e0a100}
+.stars.big .star{width:34px;height:34px}
+
+/* =========================================================
+   2. CABECERA
+   ========================================================= */
+.topbar{height:var(--hdr);flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--line);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-title);font-weight:700;font-size:18px;background:none;border:0;cursor:pointer;min-height:44px;padding:0 8px;border-radius:12px}
+.brand svg{width:30px;height:30px}
+.topnav{margin-left:auto;display:flex;gap:6px;align-items:center}
+.topnav .btn{padding:0 12px}
+.topnav .btn[aria-current="page"]{background:#e8f0fc;border-color:#bcd3f5;color:var(--blue)}
+#btnSound[aria-pressed="true"]{color:var(--green);border-color:#a9d6b9;background:#eaf6ee}
+@media (max-width:860px){ .topnav .lbl{display:none} .brand .lbl{display:none} }
+
+main#app{flex:1;min-height:0;overflow:auto;position:relative}
+.screen{min-height:100%;height:100%;padding:14px 20px 16px;display:flex;flex-direction:column;gap:12px;max-width:1340px;margin:0 auto}
+.screen-in{animation:fadeIn .28s ease both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .grow{flex:1;min-width:0}
+.banner-error{background:#fdecea;color:#8c1d18;padding:10px 16px;font-weight:600;border-bottom:1px solid #f3c1bc}
+
+/* =========================================================
+   3. MAPA
+   ========================================================= */
+/* Lienzo del mapa: "espacio" claro con nebulosas, átomos y fichas flotando */
+.map-canvas{position:relative;flex:1;min-height:380px;border-radius:20px;overflow:hidden;isolation:isolate;border:1px solid #dde3f3;
+  background:linear-gradient(160deg,#eaf0ff 0%,#f5f1ff 48%,#ebf8f1 100%)}
+.map-bg{position:absolute;inset:0;pointer-events:none;z-index:0}
+/* Nebulosas: degradados radiales (sin filter:blur, más ligero para los Chromebooks) */
+.blob{position:absolute;width:56%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--c) 0,transparent 68%);opacity:.85;animation:blob 26s ease-in-out infinite alternate;will-change:transform}
+.blob.b1{left:-16%;top:-36%;--c:#b9d0ff}
+.blob.b2{right:-18%;bottom:-40%;--c:#d6c4ff;animation-duration:32s}
+.blob.b3{left:34%;top:18%;width:40%;--c:#c3eed5;animation-duration:21s}
+@keyframes blob{to{transform:translate(9%,12%) scale(1.15)}}
+.spark{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(110,145,255,.55);animation:twinkle 3.2s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.15;transform:scale(.4)}}
+.atom{position:absolute;transform:translate(-50%,-50%);opacity:.3}
+.atom svg{width:100%;height:100%;overflow:visible;animation:spin var(--spin,60s) linear infinite}
+.atom.rev svg{animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.float-card{position:absolute;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.22);display:grid;place-items:center;font-family:var(--f-title);font-weight:700;font-size:calc(var(--s)*.46);
+  color:color-mix(in srgb,var(--gc) 85%,#000);background:color-mix(in srgb,var(--gc) 12%,#fff);border:2px solid color-mix(in srgb,var(--gc) 45%,#fff);
+  filter:blur(var(--b));opacity:var(--o,.5);animation:drift var(--t,20s) ease-in-out infinite;animation-delay:var(--dl,0s);will-change:transform}
+@keyframes drift{0%,100%{transform:translate(0,0) rotate(var(--r))}25%{transform:translate(22px,-26px) rotate(calc(var(--r) + 8deg))}50%{transform:translate(-4px,-48px) rotate(var(--r))}75%{transform:translate(-24px,-20px) rotate(calc(var(--r) - 8deg))}}
+.shoot{position:absolute;top:8%;left:-12%;width:140px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#8fb0ff 70%,#fff);opacity:0;animation:shoot 11s ease-in 4s infinite}
+@keyframes shoot{0%{transform:translate(0,0) rotate(17deg);opacity:0}3%{opacity:.9}11%,100%{transform:translate(85vw,26vw) rotate(17deg);opacity:0}}
+.map-path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.map-path line{stroke:#b4bfd8;stroke-width:3;stroke-dasharray:1 10;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.map-path line.done{stroke:var(--blue);stroke-dasharray:10 8;opacity:.5;animation:flow 1.4s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.node{position:absolute;z-index:2;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;padding:6px 8px;border-radius:16px;min-width:116px;text-align:center}
+.node:hover .orb{transform:scale(1.08)}
+/* Planeta: esfera con sombra, superficie que gira, anillo y una pequeña luna */
+.orb{--size:74px;width:var(--size);height:var(--size);border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--f-title);font-weight:700;font-size:26px;position:relative;
+  background:radial-gradient(circle at 32% 28%,color-mix(in srgb,var(--gc) 40%,#fff) 0,var(--gc) 62%,color-mix(in srgb,var(--gc) 80%,#000) 100%);
+  box-shadow:inset -9px -11px 18px rgba(0,0,0,.25),inset 5px 5px 12px rgba(255,255,255,.22),0 10px 22px color-mix(in srgb,var(--gc) 32%,transparent);transition:transform .25s}
+.orb::before{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 18% 30%,rgba(255,255,255,.22) 0 5px,transparent 6px),radial-gradient(circle at 68% 62%,rgba(0,0,0,.13) 0 8px,transparent 9px),radial-gradient(circle at 42% 88%,rgba(255,255,255,.15) 0 3px,transparent 4px),radial-gradient(circle at 88% 18%,rgba(0,0,0,.1) 0 4px,transparent 5px);
+  background-size:64px 64px;-webkit-mask:radial-gradient(circle at 42% 40%,#000 40%,transparent 72%);mask:radial-gradient(circle at 42% 40%,#000 40%,transparent 72%);animation:surface 9s linear infinite}
+@keyframes surface{to{background-position:-64px 0}}
+.orb::after{content:"";position:absolute;left:-13px;right:-13px;top:50%;height:18px;margin-top:-9px;border-radius:50%;border:3px solid color-mix(in srgb,var(--gc) 45%,#fff);border-top-color:color-mix(in srgb,var(--gc) 25%,transparent);transform:rotate(-16deg);opacity:.8;pointer-events:none;animation:ring 7s ease-in-out infinite}
+@keyframes ring{50%{transform:rotate(-9deg) scaleX(1.05)}}
+.orb span{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.orb .moon,.orb .lock-ico,.orb .done-tick{position:absolute}
+.map .node .orb{animation:bob 4.6s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bob{50%{translate:0 -8px}}
+.moon{position:absolute;inset:-17px;border-radius:50%;pointer-events:none;z-index:2;animation:spin var(--md,7s) linear infinite}
+.moon::before{content:"";position:absolute;top:0;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--gc) 55%,#fff),0 0 10px 2px rgba(255,255,255,.9)}
+.node-text{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.82);padding:4px 10px 5px;border-radius:12px;box-shadow:0 1px 4px rgba(20,30,60,.08)}
+.node-name{font-family:var(--f-title);font-weight:700;font-size:15px;line-height:1.1}
+.node-sub{font-size:12px;color:var(--muted)}
+.node.locked{cursor:not-allowed}
+.node.locked .orb{filter:grayscale(1);opacity:.5}
+.node.locked .orb::before,.node.locked .orb::after{animation:none}
+.node.locked .node-name{color:var(--muted)}
+.lock-ico{position:absolute;right:-4px;bottom:-4px;width:28px;height:28px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;z-index:2}
+.lock-ico svg{width:15px;height:15px;fill:var(--muted)}
+.map .node.current .orb{animation:bob 4.6s ease-in-out infinite,pulse 2s ease-in-out infinite;animation-delay:var(--d,0s),0s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--gc) 45%,transparent),0 8px 18px color-mix(in srgb,var(--gc) 30%,transparent)}50%{box-shadow:0 0 0 12px transparent,0 8px 18px color-mix(in srgb,var(--gc) 30%,transparent)}}
+.node.hnode .orb{--size:56px;font-size:22px;background:#fff;color:#4a5468;border:3px dashed #8a93a8;box-shadow:none}
+.node.hnode .orb::after,.node.hnode .orb::before{display:none}
+.node.hnode .orb span{text-shadow:none}
+.node.boss .orb{--size:84px;background:radial-gradient(circle at 32% 28%,#4b84e0 0,#0055cc 55%,#002f73 100%)}
+.node.boss .orb::after{left:-12px;right:-12px;top:-12px;bottom:-12px;height:auto;margin:0;border:2px dashed rgba(0,85,204,.5);transform:none;animation:spin 20s linear infinite}
+.node.boss.locked .orb::after{animation:none}
+.next-pill{background:#e8f0fc;color:var(--blue)}
+.node.boss .orb svg{width:38px;height:38px;fill:#fff;position:relative;z-index:1}
+.done-tick{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;background:var(--green);display:grid;place-items:center;z-index:2;border:2px solid #fff}
+.done-tick svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3}
+.map-legend{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:760px){
+  .map-canvas{display:flex;flex-direction:column;gap:6px;padding:10px;min-height:0}
+  .map-path{display:none}
+  .node{position:static;transform:none;flex-direction:row;justify-content:flex-start;gap:14px;text-align:left;width:100%;background:#fff;border:1px solid var(--line)}
+  .node .orb{--size:52px;font-size:20px}
+  .node.boss .orb{--size:52px}
+  .node-text{display:flex;flex-direction:column;align-items:flex-start;background:none;box-shadow:none;padding:0}
+  .node .moon{inset:-12px}
+  .map .node .orb{animation:none}
+  .map-bg .extra{display:none}
+}
+
+/* =========================================================
+   4. PLANETA
+   ========================================================= */
+.planet-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.planet-head .orb{--size:56px;font-size:22px}
+.planet-body{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:16px;flex:1;min-height:0}
+.study{padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.study ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.study li{display:flex;align-items:center;gap:10px}
+.tile{width:44px;height:44px;flex:none;border-radius:10px;display:grid;place-items:center;font-family:var(--f-title);font-weight:700;font-size:19px;background:color-mix(in srgb,var(--gc) 12%,#fff);color:color-mix(in srgb,var(--gc) 85%,#000);border:2px solid color-mix(in srgb,var(--gc) 55%,#fff)}
+.tile.h{--gc:#5c667c;border-style:dashed}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 10px}
+.games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-content:start}
+.game-card{padding:16px;display:flex;flex-direction:column;gap:10px}
+.game-ico{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--gc) 12%,#fff)}
+.game-ico svg{width:30px;height:30px;stroke:var(--gc);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.game-card .best{font-size:14px}
+.game-card .btn{margin-top:auto}
+.meter{height:8px;border-radius:99px;background:var(--soft);overflow:hidden}
+.meter > i{display:block;height:100%;background:var(--gc);border-radius:99px;transition:width .4s}
+.rules{font-size:13px;color:var(--muted)}
+@media (max-width:980px){ .games{grid-template-columns:1fr} }
+@media (max-width:760px){ .planet-body{grid-template-columns:1fr} .screen{height:auto} }
+
+/* =========================================================
+   5. RONDA RÁPIDA / PRÁCTICA (preguntas)
+   ========================================================= */
+.quiz-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.quiz-title{flex:1;min-width:180px}
+.quiz-stats{display:flex;gap:8px;flex-wrap:wrap}
+.lives svg{width:20px;height:20px;fill:var(--red)}
+.lives svg.off{fill:#d9dde8}
+.combo{background:#fff3e6;color:var(--orange)}
+.combo.bump{animation:bump .35s}
+@keyframes bump{50%{transform:scale(1.15)}}
+.qtimer{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.qtimer > div{height:100%;width:100%;background:var(--blue);border-radius:99px;transform-origin:left}
+.qtimer.low > div{background:var(--orange)}
+.qcard{padding:22px;text-align:center;border-top:6px solid var(--gc)}
+.quiz .qcard{margin-top:auto}
+.quiz .qfoot{margin-bottom:auto}
+.qtype{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:color-mix(in srgb,var(--gc) 85%,#000)}
+.qtext{font-size:26px;margin-top:6px}
+.sym-inline{display:inline-grid;place-items:center;min-width:64px;height:58px;padding:0 10px;border-radius:12px;font-size:34px;vertical-align:middle;background:color-mix(in srgb,var(--gc) 10%,#fff);border:2px solid color-mix(in srgb,var(--gc) 50%,#fff)}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:860px;width:100%;margin:0 auto}
+.opt{min-height:64px;display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:var(--r);border:2px solid var(--line);background:#fff;cursor:pointer;font-size:18px;font-weight:600;text-align:left;transition:border-color .15s,background .15s,transform .12s}
+.opt:hover:not([disabled]){border-color:#9db9e6;background:#f5f8fe}
+.opt .lbl{flex:1}
+.opt.symopt .lbl{font-family:var(--f-title);font-size:26px}
+.opt.ok{border-color:var(--green);background:#e8f5ec;color:#0f5a2a}
+.opt.bad{border-color:var(--red);background:#fdecea;color:#8c1d18}
+.opt.elim{opacity:.35}
+.opt[disabled]{cursor:default}
+.qfoot{display:flex;align-items:center;gap:12px;min-height:48px;max-width:860px;width:100%;margin:0 auto}
+.feedback{flex:1;font-weight:600;min-height:24px}
+.feedback.ok{color:var(--green)} .feedback.bad{color:var(--red)}
+.qfoot-actions{display:flex;gap:8px}
+@media (max-width:640px){ .options{grid-template-columns:1fr} .qtext{font-size:21px} }
+@media (max-height:700px) and (min-width:761px){ .qcard{padding:14px} .opt{min-height:56px} }
+
+/* =========================================================
+   6. PAREJAS
+   ========================================================= */
+.mgrid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));grid-auto-rows:minmax(64px,1fr);gap:12px;flex:1;min-height:0;max-height:470px;width:100%;max-width:820px;margin:0 auto}
+.mcard{position:relative;border:0;padding:0;background:none;cursor:pointer;perspective:900px;border-radius:var(--r);min-height:64px}
+.mcard .in{position:absolute;inset:0;transition:transform .38s ease;transform-style:preserve-3d}
+.mcard.up .in{transform:rotateY(180deg)}
+.mcard .face{position:absolute;inset:0;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:6px}
+.mcard .back{background:linear-gradient(135deg,#0055cc,#2a6fd6);box-shadow:var(--shadow)}
+.mcard .back svg{width:40%;max-width:56px;opacity:.35}
+.mcard .front{transform:rotateY(180deg);background:#fff;border:2px solid color-mix(in srgb,var(--gc) 55%,#fff);box-shadow:var(--shadow)}
+.mcard .front .s{font-family:var(--f-title);font-weight:700;font-size:clamp(26px,4vw,40px);color:color-mix(in srgb,var(--gc) 85%,#000)}
+.mcard .front .n{font-weight:700;font-size:clamp(15px,1.8vw,20px)}
+.mcard .front small{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.mcard.matched .front{background:color-mix(in srgb,var(--gc) 12%,#fff);border-color:var(--gc)}
+.mcard.wrong .front{border-color:var(--red);background:#fdecea}
+.mcard[disabled]{cursor:default}
+
+/* =========================================================
+   7. ARRASTRAR Y SOLTAR (columna y prueba final)
+   ========================================================= */
+[data-item]{touch-action:none;-webkit-user-select:none;user-select:none}
+.is-selected{outline:3px solid var(--blue)!important;outline-offset:2px;box-shadow:0 0 0 6px rgba(0,85,204,.15)!important}
+.is-dragging{opacity:.35}
+.dnd-ghost{position:fixed;left:0;top:0;z-index:100;pointer-events:none;opacity:.95;box-shadow:0 10px 24px rgba(20,30,60,.25)!important;margin:0!important}
+.selecting [data-drop]:not(.tray):not([data-item]),.selecting .drop-empty{border-style:dashed!important;border-color:var(--blue)!important}
+.drop-hover{background:#e3edfc!important;border-color:var(--blue)!important}
+@media (pointer:coarse) and (max-width:760px){ [data-item]{touch-action:manipulation} }
+
+.chip{min-width:56px;min-height:52px;padding:4px 10px;border-radius:12px;border:2px solid color-mix(in srgb,var(--gc,#8a93a8) 55%,#fff);background:#fff;cursor:grab;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;box-shadow:0 1px 2px rgba(20,30,60,.08)}
+.chip b{font-family:var(--f-title);font-size:22px;color:color-mix(in srgb,var(--gc,#30384a) 85%,#000)}
+.chip small{font-size:12px;color:var(--muted)}
+.tray{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:12px;border-radius:var(--r-lg);background:#fff;border:2px dashed var(--line);min-height:80px}
+.col-body{display:flex;gap:24px;flex:1;min-height:0;align-items:stretch;justify-content:center}
+.colwrap{display:flex;flex-direction:column;gap:6px;width:250px;flex:none}
+.colhead{text-align:center;padding:8px;border-radius:12px;background:var(--gc);color:#fff;font-family:var(--f-title)}
+.colhead b{font-size:18px}
+.slot{display:flex;align-items:center;gap:10px;min-height:48px;flex:1;max-height:62px;padding:0 10px;border-radius:12px;border:2px solid var(--line);background:#fff;cursor:pointer;text-align:left}
+.slot .per{font-size:12px;font-weight:700;color:var(--muted);width:62px}
+.slot .tileholder{flex:1;display:flex;align-items:center;gap:10px;font-weight:600}
+.slot.filled{border-color:var(--gc);background:color-mix(in srgb,var(--gc) 10%,#fff);cursor:default}
+.slot.filled .sym{font-family:var(--f-title);font-size:22px;font-weight:700;color:color-mix(in srgb,var(--gc) 85%,#000);width:36px}
+.slot.wrong{border-color:var(--red)!important;background:#fdecea!important;animation:shake .35s}
+.slot.target{border-color:var(--green)!important;background:#e8f5ec!important;border-style:solid!important}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hslot{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 10px;border-radius:12px;border:2px dashed #8a93a8;background:#f4f5f8;color:#4a5468;margin-bottom:8px;font-size:13px}
+.hslot b{font-family:var(--f-title);font-size:20px}
+.col-tray{flex:1;max-width:460px;align-self:center}
+@media (max-width:760px){ .col-body{flex-direction:column;align-items:center} .colwrap{width:100%;max-width:340px} .col-tray{width:100%} }
+
+/* Prueba final */
+.final-body{display:grid;grid-template-columns:minmax(560px,1.25fr) minmax(300px,1fr);gap:16px;flex:1;min-height:0}
+.ptable{display:grid;grid-template-columns:24px repeat(2,minmax(0,1fr)) 12px repeat(6,minmax(0,1fr));grid-template-rows:auto 50px repeat(7,minmax(38px,1fr));gap:5px;min-height:0}
+.gnum{text-align:center;font-family:var(--f-title);font-weight:700;font-size:14px;color:var(--gc);border-bottom:4px solid var(--gc);padding-bottom:2px}
+.pnum{display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.pcell{border-radius:10px;border:2px solid color-mix(in srgb,var(--gc) 35%,#fff);background:color-mix(in srgb,var(--gc) 5%,#fff);cursor:pointer;font-family:var(--f-title);font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0;min-width:0;min-height:38px;position:relative}
+.pcell.filled{background:#fff;border-color:color-mix(in srgb,var(--gc) 70%,#fff);border-style:solid}
+.pcell.hcell{--gc:#5c667c;border-style:dashed;border-color:#8a93a8;background:#f2f3f6}
+.pcell.hcell::after{content:"sin grupo";position:absolute;bottom:1px;font-family:var(--f-text);font-size:9px;font-weight:600;color:var(--muted)}
+.lslot{border-radius:10px;border:2px dashed color-mix(in srgb,var(--gc) 55%,#fff);background:color-mix(in srgb,var(--gc) 6%,#fff);cursor:pointer;font-size:11px;font-weight:700;line-height:1.1;padding:2px;min-width:0;overflow-wrap:break-word;hyphens:manual;color:color-mix(in srgb,var(--gc) 85%,#000)}
+.lslot .ph{color:var(--muted);font-weight:500}
+.lslot.filled{border-style:solid;background:#fff}
+.pcell.ok,.lslot.ok{border-color:var(--green);background:#e8f5ec;border-style:solid}
+.pcell.bad,.lslot.bad{border-color:var(--red);background:#fdecea;border-style:solid;color:var(--red)}
+.pcell.bad s,.lslot.bad s{font-size:12px;color:#8c1d18;opacity:.8}
+.pcell.bad b{color:var(--red)}
+.lslot.bad{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.side{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.side h3{font-size:15px}
+.tchip{width:52px;height:46px;border-radius:10px;border:2px solid #c9cfdd;background:#fff;font-family:var(--f-title);font-weight:700;font-size:20px;cursor:grab;box-shadow:0 1px 2px rgba(20,30,60,.08)}
+.lchip{min-height:44px;padding:0 12px;border-radius:10px;border:2px solid #c9cfdd;background:#fff;font-weight:700;font-size:14px;cursor:grab}
+.final-tray{gap:6px;padding:10px}
+@media (max-width:1100px){ .final-body{grid-template-columns:1fr} .ptable{grid-template-rows:auto 56px repeat(7,46px)} }
+
+/* =========================================================
+   8. RESULTADOS, PRÁCTICA, LOGROS
+   ========================================================= */
+.result{max-width:640px;width:100%;margin:auto;padding:26px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.big-pct{font-family:var(--f-title);font-size:56px;font-weight:700;line-height:1}
+.result .lines{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.result .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.unlock{background:#e8f5ec;color:#0f5a2a;padding:10px 14px;border-radius:12px;font-weight:600}
+.wronglist{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.wronglist span{background:#fdecea;color:#8c1d18;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600}
+
+.prac-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+.prac-grid .card{padding:16px;display:flex;flex-direction:column;gap:12px}
+.gtoggles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gtoggle{min-height:52px;border-radius:12px;border:2px solid color-mix(in srgb,var(--gc) 40%,#fff);background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:4px 12px;text-align:left}
+.gtoggle small{font-size:12px;color:var(--muted)}
+.gtoggle b{font-family:var(--f-title)}
+.gtoggle[aria-pressed="true"]{background:color-mix(in srgb,var(--gc) 14%,#fff);border-color:var(--gc)}
+.gtoggle[aria-pressed="true"] b::before{content:"✓ ";color:var(--gc)}
+.radios{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.radios label{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);cursor:pointer;background:#fff}
+.radios input{width:18px;height:18px;accent-color:var(--blue)}
+.radios label:has(input:checked){border-color:var(--blue);background:#eef4fd}
+.switch{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+.switch input{width:20px;height:20px;accent-color:var(--blue)}
+.misslist{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:860px){ .prac-grid{grid-template-columns:1fr} .gtoggles{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.badge{display:flex;gap:12px;align-items:center;padding:12px}
+.badge svg{width:60px;height:60px;flex:none}
+.badge.off svg{filter:grayscale(1);opacity:.35}
+.badge.off h3{color:var(--muted)}
+.badge p{font-size:13px;color:var(--muted)}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Hidrógeno */
+.hcard{max-width:720px;margin:auto;padding:24px;display:flex;gap:22px;align-items:center}
+.hbig{width:120px;height:120px;flex:none;border-radius:20px;border:4px dashed #8a93a8;display:grid;place-items:center;background:#f4f5f8;font-family:var(--f-title);font-weight:700;font-size:56px;color:#3d4659;position:relative}
+.hbig small{position:absolute;bottom:6px;font-size:11px;font-family:var(--f-text);color:var(--muted)}
+@media (max-width:640px){ .hcard{flex-direction:column;text-align:center} }
+
+/* Toasts y diálogo */
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:200;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(20,30,60,.18);animation:toastIn .3s ease both;max-width:360px}
+.toast svg{width:44px;height:44px;flex:none}
+.toast b{display:block;font-family:var(--f-title)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+dialog{border:0;border-radius:var(--r-lg);padding:22px;max-width:420px;width:calc(100% - 32px);box-shadow:0 20px 50px rgba(20,30,60,.3)}
+dialog::backdrop{background:rgba(20,30,60,.35)}
+dialog p{margin:10px 0 18px;color:var(--muted)}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* Pantallas pequeñas: permitir scroll */
+@media (max-width:760px),(max-height:560px){ body{overflow:auto;height:auto;min-height:100dvh} main#app{overflow:visible} .screen{height:auto;padding:12px} }
+
+/* Movimiento reducido */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="brand" data-go="map" aria-label="Expedición Periódica: ir al mapa">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="9" fill="#0055cc"/><ellipse cx="16" cy="16" rx="15" ry="5" fill="none" stroke="#c84800" stroke-width="2.4" transform="rotate(-20 16 16)"/><circle cx="12.5" cy="12.5" r="2.5" fill="#fff" opacity=".55"/></svg>
+    <span class="lbl">Expedición Periódica</span>
+  </button>
+  <nav class="topnav" aria-label="Menú principal">
+    <button class="btn" data-go="map" data-nav="map"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span class="lbl">Mapa</span></button>
+    <button class="btn" data-go="practice" data-nav="practice"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h6M8 11h6"/></svg><span class="lbl">Práctica libre</span></button>
+    <button class="btn" data-go="achievements" data-nav="achievements"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/></svg><span class="lbl">Logros</span></button>
+    <button class="btn" id="btnSound" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="m17 9 5 6m0-6-5 6"/></svg><span class="lbl" id="soundLbl">Sonido: no</span></button>
+    <button class="btn ghost" id="btnReset" title="Reiniciar progreso"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span class="lbl">Reiniciar</span></button>
+  </nav>
+</header>
+<div id="testBanner" class="banner-error" hidden></div>
+<main id="app" aria-live="off"></main>
+<div id="toasts" aria-live="polite"></div>
+<div id="live" class="sr-only" aria-live="polite"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog">
+    <h2 id="dlgTitle"></h2>
+    <p id="dlgText"></p>
+    <div class="dlg-actions"><button class="btn" value="no">Cancelar</button><button class="btn danger" value="yes" id="dlgYes">Sí</button></div>
+  </form>
+</dialog>
+<noscript><p style="padding:20px">Este juego necesita JavaScript activado.</p></noscript>
+
+<script>
+'use strict';
+/* =========================================================================
+   EXPEDICIÓN PERIÓDICA · juego de los elementos representativos (2º ESO)
+   Índice del código:
+     1. DATOS (grupos, elementos, confusiones típicas)
+     2. AUTOCOMPROBACIÓN del dataset y del generador de preguntas
+     3. UTILIDADES (barajar, tiempos, sonido, diálogos, avisos)
+     4. ESTADO Y GUARDADO (localStorage protegido) + estrellas, desbloqueo, insignias
+     5. GENERADOR DE PREGUNTAS (distractores plausibles + repetición espaciada)
+     6. ARRASTRAR/SOLTAR con alternativa "tocar y colocar" + teclado
+     7. PANTALLAS: mapa, planeta, parejas, ronda rápida, columna, prueba final,
+        práctica libre, hidrógeno, logros, resultados
+     8. ARRANQUE
+   ========================================================================= */
+
+/* ===================== 1. DATOS ===================== */
+const GROUPS = [
+  { num: 1,  name: 'Alcalinos',       color: '#c0392b' },
+  { num: 2,  name: 'Alcalinotérreos', color: '#c84800' },
+  { num: 13, name: 'Térreos',         color: '#8a5900' },
+  { num: 14, name: 'Carbonoideos',    color: '#167a3b' },
+  { num: 15, name: 'Pnictógenos',     color: '#0b7285' },
+  { num: 16, name: 'Anfígenos',       color: '#0055cc' },
+  { num: 17, name: 'Halógenos',       color: '#6741d9' },
+  { num: 18, name: 'Gases nobles',    color: '#a61e4d' },
+];
+const H_COLOR = '#5c667c';
+const ORDER = GROUPS.map(g => g.num);                 // orden de desbloqueo
+const GROUP = Object.fromEntries(GROUPS.map(g => [g.num, g]));
+const NO_GROUP = 'A ninguno';
+
+// [nombre, símbolo, grupo (o null), periodo]  — dataset cerrado: 44 elementos
+const RAW = [
+  ['Hidrógeno', 'H', null, 1],
+  ['Litio', 'Li', 1, 2], ['Sodio', 'Na', 1, 3], ['Potasio', 'K', 1, 4], ['Rubidio', 'Rb', 1, 5], ['Cesio', 'Cs', 1, 6], ['Francio', 'Fr', 1, 7],
+  ['Berilio', 'Be', 2, 2], ['Magnesio', 'Mg', 2, 3], ['Calcio', 'Ca', 2, 4], ['Estroncio', 'Sr', 2, 5], ['Bario', 'Ba', 2, 6], ['Radio', 'Ra', 2, 7],
+  ['Boro', 'B', 13, 2], ['Aluminio', 'Al', 13, 3], ['Galio', 'Ga', 13, 4], ['Indio', 'In', 13, 5], ['Talio', 'Tl', 13, 6],
+  ['Carbono', 'C', 14, 2], ['Silicio', 'Si', 14, 3], ['Germanio', 'Ge', 14, 4], ['Estaño', 'Sn', 14, 5], ['Plomo', 'Pb', 14, 6],
+  ['Nitrógeno', 'N', 15, 2], ['Fósforo', 'P', 15, 3], ['Arsénico', 'As', 15, 4], ['Antimonio', 'Sb', 15, 5], ['Bismuto', 'Bi', 15, 6],
+  ['Oxígeno', 'O', 16, 2], ['Azufre', 'S', 16, 3], ['Selenio', 'Se', 16, 4], ['Teluro', 'Te', 16, 5], ['Polonio', 'Po', 16, 6],
+  ['Flúor', 'F', 17, 2], ['Cloro', 'Cl', 17, 3], ['Bromo', 'Br', 17, 4], ['Yodo', 'I', 17, 5], ['Astato', 'At', 17, 6],
+  ['Helio', 'He', 18, 1], ['Neón', 'Ne', 18, 2], ['Argón', 'Ar', 18, 3], ['Kriptón', 'Kr', 18, 4], ['Xenón', 'Xe', 18, 5], ['Radón', 'Rn', 18, 6],
+];
+const ELEMENTS = RAW.map(([name, symbol, group, period]) => ({
+  name, symbol, group, groupName: group === null ? null : GROUP[group].name, period,
+}));
+const BY_SYMBOL = Object.fromEntries(ELEMENTS.map(e => [e.symbol, e]));
+const HYDROGEN = BY_SYMBOL.H;
+const elementsOf = g => ELEMENTS.filter(e => e.group === g).sort((a, b) => a.period - b.period);
+const colorOf = e => e.group === null ? H_COLOR : GROUP[e.group].color;
+
+// Valores esperados (para la autocomprobación)
+const EXPECTED = { total: 44, counts: { 1: 6, 2: 6, 13: 5, 14: 5, 15: 5, 16: 5, 17: 5, 18: 6 },
+  periods: { 1: [2, 7], 2: [2, 7], 13: [2, 6], 14: [2, 6], 15: [2, 6], 16: [2, 6], 17: [2, 6], 18: [1, 6] } };
+
+// Confusiones típicas de símbolo (pueden incluir símbolos inventados como "So" o "Ka").
+// Se usan PRIMERO al elegir distractores.
+const CONF = {
+  H: ['He', 'Hi', 'Hd'], Li: ['L', 'Lt', 'Le'], Na: ['So', 'S', 'N', 'Sd'], K: ['P', 'Po', 'Ka', 'Kr'], Rb: ['Ra', 'Rn', 'Ru', 'Rd'], Cs: ['Ca', 'Ce', 'C', 'Cl'], Fr: ['F', 'Fa', 'Fn', 'Fc'],
+  Be: ['B', 'Bi', 'Ba', 'Br'], Mg: ['Mn', 'Ma', 'M', 'Mo'], Ca: ['Cs', 'C', 'Cl', 'Co'], Sr: ['Es', 'St', 'S', 'Sn'], Ba: ['B', 'Be', 'Bi', 'Br'], Ra: ['Rn', 'Rb', 'Rd', 'Ri'],
+  B: ['Bi', 'Be', 'Ba', 'Br'], Al: ['A', 'Ar', 'At', 'Ai'], Ga: ['Ge', 'G', 'Gl', 'Gi'], In: ['I', 'Id', 'Ni', 'Io'], Tl: ['Te', 'T', 'Ta', 'Tu'],
+  C: ['Ca', 'Co', 'Cb', 'Cs'], Si: ['S', 'Sl', 'Se', 'Sn'], Ge: ['Ga', 'G', 'Gr', 'Gm'], Sn: ['Es', 'Sb', 'Pb', 'Si'], Pb: ['Pl', 'Sn', 'Sb', 'Po'],
+  N: ['Ni', 'Na', 'Ne', 'Nt'], P: ['F', 'Fo', 'Po', 'Ph'], As: ['Ar', 'Ae', 'At', 'Sb'], Sb: ['An', 'Sn', 'Pb', 'Bi'], Bi: ['B', 'Be', 'Ba', 'Bs'],
+  O: ['Ox', 'Oi', 'Og', 'Po'], S: ['Az', 'Na', 'Se', 'Si'], Se: ['S', 'Si', 'Sl', 'Sn'], Te: ['Tl', 'T', 'Tr', 'Tu'], Po: ['P', 'Pb', 'Pl', 'Pn'],
+  F: ['P', 'Fr', 'Fl', 'Fu'], Cl: ['C', 'Co', 'Ca', 'Ci'], Br: ['B', 'Bo', 'Bm', 'Be'], I: ['Y', 'Yo', 'Io', 'In'], At: ['As', 'Ar', 'Al', 'Ao'],
+  He: ['H', 'Hl', 'Hi', 'Ne'], Ne: ['N', 'Na', 'Ni', 'No'], Ar: ['A', 'Al', 'At', 'Ag'], Kr: ['K', 'Kp', 'Ki', 'Cr'], Xe: ['X', 'Xn', 'Se', 'Ze'], Rn: ['Ra', 'Rd', 'Ro', 'Rb'],
+};
+
+// Minijuegos de cada planeta y tiempos objetivo (segundos) para la 3ª estrella
+const GAMES = {
+  mem:  { title: 'Parejas',               desc: 'Empareja cada nombre con su símbolo.', target: n => n * 10 },
+  quiz: { title: 'Ronda rápida',          desc: '10 preguntas, 3 vidas y combo por racha.', target: () => 90 },
+  col:  { title: 'Construye la columna',  desc: 'Coloca cada elemento en su periodo.', target: n => n * 8 },
+};
+const GAME_KEYS = Object.keys(GAMES);
+const QUIZ_PER_Q = 12;      // segundos por pregunta en la ronda rápida
+const FINAL_LIMIT = 480;    // segundos de la prueba final
+const FINAL_TOTAL = 44 + GROUPS.length; // símbolos + etiquetas
+const TYPE_LABEL = { sym2name: 'Símbolo → nombre', name2sym: 'Nombre → símbolo', elem2group: 'Elemento → grupo', group2num: 'Grupo → número', notin: '¿Cuál no pertenece?' };
+
+/* ===================== 3. UTILIDADES ===================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const reducedMotion = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function wpick(arr, wf) {
+  const ws = arr.map(wf); let r = Math.random() * ws.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < arr.length; i++) { r -= ws[i]; if (r <= 0) return arr[i]; }
+  return arr[arr.length - 1];
+}
+function wpickN(arr, n, wf) { const pool = [...arr], out = []; while (out.length < n && pool.length) { const x = wpick(pool, wf); out.push(x); pool.splice(pool.indexOf(x), 1); } return out; }
+
+// Temporizadores ligados a la pantalla actual (se limpian al cambiar de pantalla)
+let timers = [], cleanups = [], keyHandler = null;
+const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(['t', id]); return id; };
+const every = (fn, ms) => { const id = setInterval(fn, ms); timers.push(['i', id]); return id; };
+function clearScreen() {
+  timers.forEach(([k, id]) => k === 't' ? clearTimeout(id) : clearInterval(id)); timers = [];
+  cleanups.forEach(f => { try { f(); } catch (e) { /* nada */ } }); cleanups = []; keyHandler = null;
+  $$('.dnd-ghost').forEach(g => g.remove());
+}
+const announce = t => { const l = $('#live'); l.textContent = ''; setTimeout(() => { l.textContent = t; }, 30); };
+
+// Sonido con Web Audio (silenciado por defecto)
+const Sound = {
+  ctx: null,
+  play(kind) {
+    if (!S.sound) return;
+    try {
+      if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const c = this.ctx; if (c.state === 'suspended') c.resume();
+      const seqs = { ok: [[660, .09], [880, .14]], bad: [[196, .22, 'triangle']], tap: [[520, .05]], flip: [[430, .04, 'triangle']],
+        win: [[523, .1], [659, .1], [784, .1], [1047, .25]], badge: [[784, .09], [988, .09], [1319, .22]], match: [[740, .07], [990, .1]] };
+      let t = c.currentTime + .01;
+      (seqs[kind] || []).forEach(([f, d, type]) => {
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = type || 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.14, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+        o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .03); t += d * .85;
+      });
+    } catch (e) { /* sin sonido */ }
+  },
+};
+
+// Diálogo de confirmación accesible (usa <dialog>)
+function confirmDialog(title, text, yes = 'Sí') {
+  return new Promise(resolve => {
+    const d = $('#dlg');
+    $('#dlgTitle').textContent = title; $('#dlgText').textContent = text; $('#dlgYes').textContent = yes;
+    const onClose = () => { d.removeEventListener('close', onClose); resolve(d.returnValue === 'yes'); };
+    d.addEventListener('close', onClose); d.returnValue = '';
+    try { d.showModal(); } catch (e) { resolve(window.confirm(title + '\n' + text)); }
+  });
+}
+function toast(html, icon = '') {
+  const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = icon + '<div>' + html + '</div>';
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), 4200);
+}
+
+// Iconos SVG
+const STAR = on => `<svg class="star${on ? ' on' : ''}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.3l-5.6 2.9 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>`;
+const starsHTML = (n, big) => `<span class="stars${big ? ' big' : ''}" role="img" aria-label="${n} de 3 estrellas">${[0, 1, 2].map(i => STAR(i < n)).join('')}</span>`;
+const HEART = on => `<svg class="${on ? '' : 'off'}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg>`;
+const LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
+const TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+const TROPHY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.4A5 5 0 0 1 13 14.9V18h3v3H8v-3h3v-3.1A5 5 0 0 1 8.4 12H8a4 4 0 0 1-4-4V5h3zm0 4H6v1a2 2 0 0 0 1 1.7zm10 0v2.7A2 2 0 0 0 18 8V7z"/></svg>';
+const GAME_ICONS = {
+  mem: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="11" rx="2"/><rect x="13" y="9" width="8" height="11" rx="2"/><path d="M6 9.5h2M16 14.5h2"/></svg>',
+  quiz: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/></svg>',
+  col: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="5" rx="1.5"/><rect x="8" y="9.5" width="8" height="5" rx="1.5"/><rect x="8" y="17" width="8" height="5" rx="1.5"/><path d="M3 12h3M4.5 10.5 6 12l-1.5 1.5"/></svg>',
+};
+function hexBadge(color, inner) {
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3 57 17.5v29L32 61 7 46.5v-29z" fill="${color}"/><path d="M32 9.5 51.5 20.8v22.4L32 54.5 12.5 43.2V20.8z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>${inner}</svg>`;
+}
+const BADGES = [
+  ...GROUPS.map(g => ({ id: 'master' + g.num, title: 'Maestro de los ' + g.name, desc: `3 estrellas en el grupo ${g.num}.`,
+    icon: hexBadge(g.color, `<text x="32" y="40" text-anchor="middle" font-family="Space Grotesk,Arial,sans-serif" font-weight="700" font-size="${g.num > 9 ? 20 : 24}" fill="#fff">${g.num}</text>`) })),
+  { id: 'streak15', title: 'Racha de 15', desc: '15 respuestas correctas seguidas.',
+    icon: hexBadge('#c84800', '<path d="M32 15c3 6 9 9 9 18a9 9 0 0 1-18 0c0-4 2-7 4-9 0 3 1 5 3 6 0-6 0-10 2-15z" fill="#fff"/>') },
+  { id: 'perfect', title: 'Tabla completa sin fallos', desc: `${FINAL_TOTAL}/${FINAL_TOTAL} en la prueba final.`,
+    icon: hexBadge('#0055cc', '<g fill="#fff"><rect x="18" y="20" width="7" height="7" rx="1.5"/><rect x="18" y="29" width="7" height="7" rx="1.5"/><rect x="18" y="38" width="7" height="7" rx="1.5"/><rect x="27" y="29" width="7" height="7" rx="1.5"/><rect x="27" y="38" width="7" height="7" rx="1.5"/><rect x="39" y="20" width="7" height="7" rx="1.5"/><rect x="39" y="29" width="7" height="7" rx="1.5"/><rect x="39" y="38" width="7" height="7" rx="1.5"/></g>') },
+  { id: 'nohints', title: 'Sin pistas', desc: '3 estrellas en un planeta sin usar ninguna pista.',
+    icon: hexBadge('#167a3b', '<g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M26 41h12M27 46h10M32 17a9 9 0 0 0-5 16.5V37h10v-3.5A9 9 0 0 0 32 17z"/><path d="M19 18l26 28"/></g>') },
+];
+const BADGE = Object.fromEntries(BADGES.map(b => [b.id, b]));
+
+/* ===================== 4. ESTADO Y GUARDADO ===================== */
+const STORE_KEY = 'expedicion-periodica-v1';
+const defaultState = () => ({ v: 1, sound: false, games: {}, final: null, badges: {}, miss: {}, streak: 0, bestStreak: 0, hDone: false, prac: null });
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
+    const d = JSON.parse(raw);
+    return (d && typeof d === 'object') ? Object.assign(defaultState(), d) : defaultState();
+  } catch (e) { return defaultState(); }
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { /* el juego sigue sin guardar */ } }
+let S = load();
+
+// Repetición espaciada: cada fallo sube el peso de ese elemento; cada acierto lo baja.
+function noteMiss(key, ok) {
+  const m = S.miss[key] || 0;
+  const v = ok ? Math.max(0, m - 1) : Math.min(6, m + 2);
+  if (v) S.miss[key] = v; else delete S.miss[key];
+}
+function noteStreak(ok) { if (ok) { S.streak++; if (S.streak > S.bestStreak) S.bestStreak = S.streak; } else S.streak = 0; }
+const weight = key => 1 + 2 * (S.miss[key] || 0);
+
+// Estrellas: media de los 3 minijuegos (hay que haberlos jugado los 3)
+function planetInfo(g) {
+  const r = S.games[g] || {}; const recs = GAME_KEYS.map(k => r[k]).filter(Boolean);
+  const avg = recs.length ? recs.reduce((a, x) => a + x.pct, 0) / 3 : 0;
+  let stars = 0;
+  if (recs.length === 3) stars = (avg >= 95 && recs.every(x => x.inTime)) ? 3 : avg >= 80 ? 2 : avg >= 60 ? 1 : 0;
+  return { stars, avg, played: recs.length };
+}
+const planetStars = g => planetInfo(g).stars;
+const isUnlocked = g => { const i = ORDER.indexOf(g); return i <= 0 || planetStars(ORDER[i - 1]) >= 1; };
+const finalUnlocked = () => planetStars(ORDER[ORDER.length - 1]) >= 1;
+const finalStars = () => { if (!S.final) return 0; const p = 100 * S.final.score / S.final.total; return p >= 95 ? 3 : p >= 80 ? 2 : p >= 60 ? 1 : 0; };
+// Comparar registros: prioriza el que da 3 estrellas, después % , tiempo objetivo, menos pistas y menos tiempo
+const recKey = r => [(r.pct >= 95 && r.inTime) ? 1 : 0, r.pct, r.inTime ? 1 : 0, -(r.hints || 0), -r.time];
+function better(a, b) { const ka = recKey(a), kb = recKey(b); for (let i = 0; i < ka.length; i++) { if (ka[i] !== kb[i]) return ka[i] > kb[i]; } return false; }
+
+function checkBadges() {
+  const got = []; const give = id => { if (!S.badges[id]) { S.badges[id] = Date.now(); got.push(id); } };
+  ORDER.forEach(g => {
+    if (planetStars(g) === 3) {
+      give('master' + g);
+      const r = S.games[g]; if (GAME_KEYS.every(k => r[k] && !r[k].hints)) give('nohints');
+    }
+  });
+  if (S.bestStreak >= 15) give('streak15');
+  if (S.final && S.final.score === S.final.total) give('perfect');
+  if (got.length) { save(); got.forEach((id, i) => setTimeout(() => { Sound.play('badge'); toast(`<b>¡Nueva insignia!</b>${BADGE[id].title}`, BADGE[id].icon); }, 300 + i * 500)); }
+  return got;
+}
+
+/* ===================== 5. GENERADOR DE PREGUNTAS ===================== */
+function nearGroups(g, k = 3) {
+  const i = ORDER.indexOf(g);
+  return [i - 1, i + 1, i - 2, i + 2, i - 3, i + 3].filter(j => j >= 0 && j < ORDER.length).map(j => ORDER[j]).slice(0, k);
+}
+// Elige k elementos distintos recorriendo "niveles" de plausibilidad (cada nivel se baraja)
+function pickTiers(tiers, k, exclude) {
+  const out = [];
+  for (const tier of tiers) {
+    for (const x of shuffle(tier)) { if (x !== exclude && !out.includes(x)) out.push(x); if (out.length === k) return out; }
+  }
+  return out;
+}
+const neighbourEls = e => ELEMENTS.filter(x => x !== e && (
+  (e.group !== null && x.group === e.group && Math.abs(x.period - e.period) <= 1) ||
+  (x.period === e.period && x.group !== null && e.group !== null && Math.abs(ORDER.indexOf(x.group) - ORDER.indexOf(e.group)) <= 1)));
+function symbolDistractors(e) {
+  const fake = cap(norm(e.name).slice(0, 2));
+  return pickTiers([
+    CONF[e.symbol] || [],
+    ELEMENTS.filter(x => x.symbol[0] === e.symbol[0]).map(x => x.symbol),
+    fake !== e.symbol ? [fake] : [],
+    neighbourEls(e).map(x => x.symbol),
+    ELEMENTS.map(x => x.symbol),
+  ], 3, e.symbol);
+}
+function nameDistractors(e) {
+  return pickTiers([
+    (CONF[e.symbol] || []).map(s => BY_SYMBOL[s]).filter(Boolean).map(x => x.name),
+    ELEMENTS.filter(x => norm(x.name)[0] === e.symbol[0].toLowerCase()).map(x => x.name),
+    neighbourEls(e).map(x => x.name),
+    ELEMENTS.map(x => x.name),
+  ], 3, e.name);
+}
+function mkQ(type, text, correct, distractors, key, explain, meta = {}, symOpts = false) {
+  const options = shuffle([{ label: correct, ok: true }, ...distractors.map(d => ({ label: d, ok: false }))]);
+  return { type, text, options, key, explain, meta, symOpts, sig: type + ':' + (meta.sig || key) };
+}
+const elLabel = e => `${e.name} (${e.symbol})`;
+const Q = {
+  sym2name: e => mkQ('sym2name', `¿Qué elemento tiene el símbolo <span class="sym-inline">${e.symbol}</span>?`, e.name, nameDistractors(e), e.symbol,
+    `«${e.symbol}» es el símbolo del ${e.name}.`, { el: e }),
+  name2sym: e => mkQ('name2sym', `¿Cuál es el símbolo del <b>${e.name}</b>?`, e.symbol, symbolDistractors(e), e.symbol,
+    `El símbolo del ${e.name} es «${e.symbol}».`, { el: e }, true),
+  elem2group: e => {
+    const correct = e.group === null ? NO_GROUP : e.groupName;
+    const ds = e.group === null ? ['Alcalinos', 'Gases nobles', 'Halógenos'] : nearGroups(e.group).map(n => GROUP[n].name);
+    const ex = e.group === null ? 'El Hidrógeno (H) no pertenece a ningún grupo: no es un alcalino.' : `El ${elLabel(e)} es de los ${e.groupName} (grupo ${e.group}).`;
+    return mkQ('elem2group', `¿A qué grupo pertenece el <b>${elLabel(e)}</b>?`, correct, shuffle(ds).slice(0, 3), e.symbol, ex, { el: e });
+  },
+  group2num: g => {
+    const ds = pickTiers([nearGroups(g, 2), [g >= 13 ? g - 10 : g + 10], nearGroups(g, 6)], 3, g);
+    return mkQ('group2num', `¿Qué número tiene el grupo de los <b>${GROUP[g].name}</b>?`, 'Grupo ' + g, ds.map(n => 'Grupo ' + n), 'g' + g,
+      `Los ${GROUP[g].name} son el grupo ${g}.`, { g, sig: 'g' + g }, true);
+  },
+  notin: g => {
+    const ins = wpickN(elementsOf(g), 3, e => weight(e.symbol));
+    let out;
+    if (g === 1 && Math.random() < 0.4) out = HYDROGEN;
+    else {
+      const ng = pick(nearGroups(g, 2)); const periods = ins.map(e => e.period);
+      const cands = elementsOf(ng); const same = cands.filter(e => periods.includes(e.period));
+      out = pick(same.length ? same : cands);
+    }
+    const ex = out.group === null ? `El Hidrógeno (H) no pertenece a ningún grupo: no es un alcalino.` : `El ${elLabel(out)} es de los ${out.groupName}, no de los ${GROUP[g].name}.`;
+    const q = mkQ('notin', `¿Cuál de estos <b>NO</b> pertenece a los <b>${GROUP[g].name}</b>?`, elLabel(out), ins.map(elLabel), 'g' + g, ex,
+      { g, out, ins, sig: 'g' + g + out.symbol });
+    return q;
+  },
+};
+const pickEl = (pool, avoid) => { const p = pool.length > 1 ? pool.filter(e => e !== avoid) : pool; return wpick(p, e => weight(e.symbol)); };
+
+// Preguntas de la ronda rápida de un planeta
+function planetQuestion(g, type, last) {
+  const prev = ORDER.slice(0, ORDER.indexOf(g));
+  switch (type) {
+    case 'sym2name': case 'name2sym': return Q[type](pickEl(elementsOf(g), last));
+    case 'elem2group': {
+      const review = [...prev.flatMap(elementsOf), HYDROGEN];
+      return Q.elem2group(pickEl(Math.random() < 0.5 ? elementsOf(g) : review, last));
+    }
+    case 'group2num': return Q.group2num(prev.length && Math.random() < 0.4 ? wpick(prev, n => weight('g' + n)) : g);
+    case 'notin': return Q.notin(g);
+  }
+}
+// Preguntas de práctica libre
+function practiceTypes(cfg) {
+  const real = cfg.groups.filter(n => n !== 'H');
+  const all = ['sym2name', 'name2sym', 'elem2group', ...(real.length ? ['group2num', 'notin'] : [])];
+  return cfg.type === 'mix' ? all : all.filter(t => t === cfg.type);
+}
+function practicePool(cfg) {
+  let pool = cfg.groups.flatMap(n => n === 'H' ? [HYDROGEN] : elementsOf(n));
+  if (cfg.onlyMiss) { const m = pool.filter(e => S.miss[e.symbol]); if (m.length) pool = m; }
+  return pool;
+}
+function practiceQuestion(cfg, last) {
+  const type = pick(practiceTypes(cfg));
+  const real = cfg.groups.filter(n => n !== 'H');
+  if (type === 'group2num' || type === 'notin') return Q[type](wpick(real, n => weight('g' + n)));
+  return Q[type](pickEl(practicePool(cfg), last));
+}
+
+/* ===================== 2. AUTOCOMPROBACIÓN ===================== */
+function selfTest(rounds = 40) {
+  const errs = []; const fail = m => errs.push(m);
+  if (ELEMENTS.length !== EXPECTED.total) fail(`Hay ${ELEMENTS.length} elementos (deben ser 44).`);
+  for (const [g, n] of Object.entries(EXPECTED.counts)) {
+    const els = elementsOf(+g);
+    if (els.length !== n) fail(`El grupo ${g} tiene ${els.length} elementos (deben ser ${n}).`);
+    const [a, b] = EXPECTED.periods[g];
+    els.forEach((e, i) => { if (e.period !== a + i) fail(`${e.name}: periodo ${e.period} incorrecto.`); if (e.groupName !== GROUP[g].name) fail(`${e.name}: nombre de grupo incorrecto.`); });
+    if (els.length && els[els.length - 1].period !== b) fail(`Grupo ${g}: el último periodo debería ser ${b}.`);
+  }
+  if (HYDROGEN.group !== null || HYDROGEN.period !== 1 || HYDROGEN.groupName !== null) fail('El hidrógeno debe tener grupo null y periodo 1.');
+  if (ELEMENTS.filter(e => e.group === null).length !== 1) fail('Solo el hidrógeno puede no tener grupo.');
+  if (new Set(ELEMENTS.map(e => e.symbol)).size !== 44) fail('Hay símbolos repetidos.');
+  if (new Set(ELEMENTS.map(e => e.name)).size !== 44) fail('Hay nombres repetidos.');
+  if (elementsOf(1).includes(HYDROGEN)) fail('El hidrógeno aparece como alcalino.');
+  const check = q => {
+    const labels = q.options.map(o => o.label);
+    if (q.options.length !== 4) fail(`${q.sig}: no tiene 4 opciones.`);
+    if (new Set(labels).size !== labels.length) fail(`${q.sig}: opciones repetidas (${labels}).`);
+    const ok = q.options.filter(o => o.ok); if (ok.length !== 1) { fail(`${q.sig}: ${ok.length} correctas.`); return; }
+    const c = ok[0].label, e = q.meta.el;
+    if (q.type === 'sym2name' && c !== e.name) fail(`${q.sig}: respuesta incorrecta.`);
+    if (q.type === 'name2sym' && c !== e.symbol) fail(`${q.sig}: respuesta incorrecta.`);
+    if (q.type === 'elem2group' && c !== (e.group === null ? NO_GROUP : e.groupName)) fail(`${q.sig}: grupo incorrecto.`);
+    if (q.type === 'group2num' && c !== 'Grupo ' + q.meta.g) fail(`${q.sig}: número incorrecto.`);
+    if (q.type === 'notin') {
+      if (q.meta.out.group === q.meta.g) fail(`${q.sig}: la respuesta sí es del grupo.`);
+      if (q.meta.ins.some(x => x.group !== q.meta.g)) fail(`${q.sig}: hay un "intruso" entre los del grupo.`);
+      if (q.meta.ins.includes(HYDROGEN)) fail(`${q.sig}: el H aparece como miembro de un grupo.`);
+    }
+    if ((q.type === 'sym2name' || q.type === 'name2sym') && q.meta.el.symbol === 'H' && false) fail('');
+  };
+  const saved = S.miss; S.miss = {};
+  try {
+    for (let r = 0; r < rounds; r++) {
+      ORDER.forEach(g => ['sym2name', 'name2sym', 'elem2group', 'group2num', 'notin'].forEach(t => check(planetQuestion(g, t))));
+      ['sym2name', 'name2sym', 'elem2group'].forEach(t => check(Q[t](HYDROGEN)));
+      check(practiceQuestion({ groups: ['H', ...ORDER], type: 'mix', onlyMiss: false }));
+    }
+    ELEMENTS.forEach(e => { check(Q.sym2name(e)); check(Q.name2sym(e)); check(Q.elem2group(e)); });
+    const hq = Q.elem2group(HYDROGEN); if (hq.options.find(o => o.ok).label !== NO_GROUP) fail('El H debe responder "A ninguno".');
+  } finally { S.miss = saved; }
+  const res = { ok: errs.length === 0, errors: [...new Set(errs)] };
+  if (res.ok) console.info('[Autocomprobación] OK: 44 elementos, grupos y periodos correctos; preguntas válidas; el H nunca es miembro de un grupo.');
+  else console.error('[Autocomprobación] Errores:', res.errors);
+  return res;
+}
+
+/* ===================== 6. ARRASTRAR Y SOLTAR ===================== */
+// Elementos con [data-item] se pueden arrastrar o seleccionar con un toque/clic/Intro.
+// Elementos con [data-drop] son destinos. Un mismo botón puede ser ambos (casilla ocupada).
+function attachDnD(root, opts) {
+  let sel = null, drag = null, ghost = null, hoverT = null, lastDragEnd = 0;
+  const locked = () => opts.isLocked && opts.isLocked();
+  const findItem = id => root.querySelector(`[data-item="${CSS.escape(id)}"]`);
+  function clearSel() { sel = null; root.classList.remove('selecting'); $$('.is-selected', root).forEach(x => x.classList.remove('is-selected')); }
+  function setSel(id) { clearSel(); sel = id; root.classList.add('selecting'); const el = findItem(id); if (el) el.classList.add('is-selected'); Sound.play('tap'); }
+  function targetAt(x, y) { const el = document.elementFromPoint(x, y); const t = el && el.closest('[data-drop]'); return t && root.contains(t) ? t : null; }
+  function drop(id, t) { clearSel(); if (t.dataset.item === id) return; opts.onDrop(id, t.dataset.drop, t); }
+  function onDown(e) {
+    if (locked() || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const it = e.target.closest('[data-item]'); if (!it || !root.contains(it)) return;
+    drag = { id: it.dataset.item, el: it, x: e.clientX, y: e.clientY, pid: e.pointerId, on: false };
+  }
+  function onMove(e) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    if (!drag.on) {
+      if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 8) return;
+      drag.on = true;
+      try { drag.el.setPointerCapture(drag.pid); } catch (_) { /* nada */ }
+      const r = drag.el.getBoundingClientRect();
+      ghost = drag.el.cloneNode(true); ['data-item', 'data-drop', 'id'].forEach(a => ghost.removeAttribute(a));
+      ghost.classList.add('dnd-ghost'); ghost.classList.remove('is-selected'); ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
+      document.body.appendChild(ghost); setSel(drag.id); drag.el.classList.add('is-dragging');
+    }
+    e.preventDefault();
+    ghost.style.transform = `translate(${e.clientX - ghost.offsetWidth / 2}px,${e.clientY - ghost.offsetHeight / 2}px)`;
+    const t = targetAt(e.clientX, e.clientY);
+    if (t !== hoverT) { if (hoverT) hoverT.classList.remove('drop-hover'); hoverT = t; if (t) t.classList.add('drop-hover'); }
+  }
+  function onUp(e, cancel) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const d = drag; drag = null; if (!d.on) return;
+    lastDragEnd = Date.now();
+    if (ghost) ghost.remove(); ghost = null; d.el.classList.remove('is-dragging');
+    if (hoverT) hoverT.classList.remove('drop-hover'); hoverT = null;
+    const t = cancel ? null : targetAt(e.clientX, e.clientY);
+    if (t && !locked()) drop(d.id, t); else clearSel();
+  }
+  function onClick(e) {
+    if (Date.now() - lastDragEnd < 400) { e.preventDefault(); return; }
+    if (locked()) return;
+    const it = e.target.closest('[data-item]'); const t = e.target.closest('[data-drop]');
+    if (it && !root.contains(it)) return;
+    if (sel !== null) {
+      if (it && it.dataset.item === sel) { clearSel(); return; }
+      if (it && !it.hasAttribute('data-drop')) { setSel(it.dataset.item); return; }
+      if (t && root.contains(t)) { drop(sel, t); return; }
+      clearSel(); return;
+    }
+    if (it) { setSel(it.dataset.item); if (opts.onSelect) opts.onSelect(it.dataset.item); }
+  }
+  function onKey(e) {
+    if (e.key === 'Escape' && sel !== null) { clearSel(); e.preventDefault(); }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && sel !== null && opts.trayId) { const id = sel; clearSel(); opts.onDrop(id, opts.trayId, null); e.preventDefault(); }
+  }
+  const up = e => onUp(e, false), cancel = e => onUp(e, true);
+  root.addEventListener('pointerdown', onDown); root.addEventListener('pointermove', onMove);
+  root.addEventListener('pointerup', up); root.addEventListener('pointercancel', cancel);
+  root.addEventListener('click', onClick); root.addEventListener('keydown', onKey);
+  cleanups.push(() => { if (ghost) ghost.remove(); });
+  return { get selected() { return sel; }, clear: clearSel, select: setSel,
+    refresh() { if (sel !== null) { const el = findItem(sel); if (el) el.classList.add('is-selected'); else clearSel(); } } };
+}
+
+/* ===================== 7. PANTALLAS ===================== */
+const app = $('#app');
+function show(html, cls = '') {
+  clearScreen(); // cada pantalla nueva detiene los temporizadores de la anterior
+  app.innerHTML = `<section class="screen ${cls}${reducedMotion() ? '' : ' screen-in'}">${html}</section>`;
+  app.scrollTop = 0;
+  const h = app.querySelector('h1, h2');
+  if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+  return app.firstElementChild;
+}
+const ROUTES = {};
+function go(name, arg) {
+  clearScreen();
+  (ROUTES[name] || ROUTES.map)(arg);
+  $$('[data-nav]').forEach(b => { if (b.dataset.nav === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  const [r, a] = b.dataset.go.split(':');
+  go(r, a === undefined ? undefined : (isNaN(a) ? a : +a));
+});
+document.addEventListener('keydown', e => { if (keyHandler && !e.defaultPrevented) keyHandler(e); });
+
+/* ---------- 7.1 MAPA ---------- */
+const MAP_POS = { H: [6, 30], 1: [20, 26], 2: [35, 17], 13: [50, 27], 14: [66, 17], 15: [84, 29], 16: [80, 74], 17: [62, 81], 18: [44, 74], final: [23, 75] };
+// Fondo decorativo del mapa: nebulosas, átomos con electrones en órbita, fichas de símbolos
+// flotando desenfocadas (más grandes = más cerca = más borrosas), destellos y una estrella fugaz.
+function mapBackdrop() {
+  const rm = reducedMotion(), rnd = (a, b) => a + Math.random() * (b - a);
+  const orbit = 'M44,0 A44,15 0 1,1 -44,0 A44,15 0 1,1 44,0';
+  const atom = (c, n, speed) => `<svg viewBox="-50 -50 100 100">${[0, 60, 120].slice(0, n).map((a, i) =>
+    `<g transform="rotate(${a})"><path d="${orbit}" fill="none" stroke="${c}" stroke-width="1.6"/>
+      <circle r="3.8" fill="${c}"${rm ? ' cx="44"' : ''}>${rm ? '' : `<animateMotion dur="${(speed + i * 1.4).toFixed(1)}s" begin="-${(i * 1.1).toFixed(1)}s" repeatCount="indefinite" path="${orbit}"/>`}</circle></g>`).join('')}
+    <circle r="8" fill="${c}"/><circle r="3" cx="-2.5" cy="-2.5" fill="#fff" opacity=".6"/></svg>`;
+  const ATOMS = [[9, 80, 130, '#0055cc', 3, 4], [50, 50, 170, '#6741d9', 3, 5], [94, 14, 110, '#167a3b', 2, 3.5], [30, 6, 80, '#c84800', 2, 3], [72, 95, 120, '#a61e4d', 3, 4.5], [66, 46, 70, '#0b7285', 1, 2.8]];
+  const atoms = ATOMS.map(([x, y, s, c, n, sp], i) =>
+    `<div class="atom${i % 2 ? ' rev' : ''}${i >= 3 ? ' extra' : ''}" style="left:${x}%;top:${y}%;width:${s}px;height:${s}px;--spin:${40 + i * 9}s">${atom(c, n, sp)}</div>`).join('');
+  const cards = shuffle(ELEMENTS).slice(0, 16).map((e, i) => {
+    const s = rnd(28, 64), t = rnd(16, 30);
+    return `<span class="float-card${i >= 7 ? ' extra' : ''}" style="left:${rnd(2, 94).toFixed(1)}%;top:${rnd(4, 90).toFixed(1)}%;--gc:${colorOf(e)};--s:${s.toFixed(0)}px;--b:${(0.4 + (s - 28) / 36 * 3).toFixed(1)}px;--o:${(0.6 - (s - 28) / 36 * 0.25).toFixed(2)};--r:${rnd(-18, 18).toFixed(0)}deg;--t:${t.toFixed(1)}s;--dl:-${rnd(0, t).toFixed(1)}s">${e.symbol}</span>`;
+  }).join('');
+  const sparks = Array.from({ length: 22 }, () => { const z = rnd(2, 4.5).toFixed(1);
+    return `<span class="spark" style="left:${rnd(1, 99).toFixed(1)}%;top:${rnd(1, 99).toFixed(1)}%;width:${z}px;height:${z}px;animation-delay:-${rnd(0, 3).toFixed(1)}s"></span>`; }).join('');
+  return `<div class="map-bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>${atoms}${cards}${sparks}<span class="shoot"></span></div>`;
+}
+ROUTES.map = function () {
+  const totalStars = ORDER.reduce((a, g) => a + planetStars(g), 0);
+  const nBadges = Object.keys(S.badges).length;
+  const path = [...ORDER, 'final'];
+  const lines = path.slice(1).map((k, i) => {
+    const [x1, y1] = MAP_POS[path[i]], [x2, y2] = MAP_POS[k];
+    const done = k === 'final' ? finalUnlocked() : isUnlocked(k);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${done ? 'done' : ''}"/>`;
+  }).join('');
+  const current = ORDER.find(g => isUnlocked(g) && planetStars(g) === 0) ?? (finalUnlocked() && !S.final ? 'final' : null);
+  const nodes = ORDER.map(g => {
+    const G = GROUP[g], un = isUnlocked(g), st = planetStars(g), [x, y] = MAP_POS[g];
+    return `<button class="node${un ? '' : ' locked'}${current === g ? ' current' : ''}" style="left:${x}%;top:${y}%;--gc:${G.color}"
+      ${un ? `data-go="planet:${g}"` : `data-locked="${g}" aria-disabled="true"`}
+      aria-label="Grupo ${g}, ${G.name}. ${un ? st + ' de 3 estrellas' : 'Bloqueado'}">
+      <span class="orb" style="--d:-${(ORDER.indexOf(g) * 0.55).toFixed(2)}s"><span>${g}</span>${un ? `<span class="moon" style="--md:${(5 + (g % 5) * 1.3).toFixed(1)}s${g % 2 ? ';animation-direction:reverse' : ''}"></span>` : `<span class="lock-ico">${LOCK}</span>`}</span>
+      <span class="node-text"><span class="node-name">${G.name}</span><span class="node-sub">Grupo ${g}</span>${starsHTML(st)}</span>
+    </button>`;
+  }).join('');
+  const fu = finalUnlocked(), fs = finalStars();
+  const boss = `<button class="node boss${fu ? '' : ' locked'}${current === 'final' ? ' current' : ''}" style="left:${MAP_POS.final[0]}%;top:${MAP_POS.final[1]}%;--gc:#0055cc"
+      ${fu ? 'data-go="final"' : 'data-locked="final" aria-disabled="true"'} aria-label="Prueba final. ${fu ? (S.final ? `Mejor resultado ${S.final.score} de ${S.final.total}` : 'Disponible') : 'Bloqueada'}">
+      <span class="orb" style="--d:-1.2s">${TROPHY}${fu ? '' : `<span class="lock-ico">${LOCK}</span>`}</span>
+      <span class="node-text"><span class="node-name">Prueba final</span><span class="node-sub">${S.final ? `Récord: ${S.final.score}/${S.final.total}` : 'La tabla completa'}</span>${starsHTML(fs)}</span>
+    </button>`;
+  const [hx, hy] = MAP_POS.H;
+  const hnode = `<button class="node hnode" style="left:${hx}%;top:${hy}%" data-go="hydrogen" aria-label="Hidrógeno, sin grupo${S.hDone ? ', reto completado' : ''}">
+      <span class="orb" style="--d:-2.3s"><span>H</span>${S.hDone ? `<span class="done-tick">${TICK}</span>` : ''}</span>
+      <span class="node-text"><span class="node-name">Hidrógeno</span><span class="node-sub">sin grupo</span></span></button>`;
+  show(`
+    <div class="bar">
+      <div class="grow"><h1>Mapa de la expedición</h1><p class="muted">Gana al menos 1 estrella en cada planeta para desbloquear el siguiente. Cada planeta es un grupo de la tabla.</p></div>
+      <div class="map-legend"><span class="pill next-pill">Siguiente parada: ${current === null ? '¡expedición completada!' : current === 'final' ? 'Prueba final' : GROUP[current].name}</span><span class="pill">${STAR(true)} ${totalStars}/24</span><span class="pill">Insignias ${nBadges}/${BADGES.length}</span>
+      <button class="btn" data-go="practice">Práctica libre</button></div>
+    </div>
+    <div class="map-canvas">${mapBackdrop()}<svg class="map-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${hnode}${nodes}${boss}</div>`, 'map');
+  $$('[data-locked]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.locked; const prev = k === 'final' ? 18 : ORDER[ORDER.indexOf(+k) - 1];
+    toast(`<b>Planeta bloqueado</b>Consigue al menos 1 estrella en los ${GROUP[prev].name} para abrirlo.`);
+  }));
+};
+
+/* ---------- 7.2 PLANETA ---------- */
+ROUTES.planet = function (g) {
+  if (!GROUP[g] || !isUnlocked(g)) return go('map');
+  const G = GROUP[g], els = elementsOf(g), info = planetInfo(g), recs = S.games[g] || {};
+  const cards = GAME_KEYS.map(k => {
+    const r = recs[k], target = GAMES[k].target(els.length);
+    return `<article class="card game-card">
+      <div class="game-ico">${GAME_ICONS[k]}</div>
+      <h3>${GAMES[k].title}</h3><p class="muted">${GAMES[k].desc}</p>
+      <div class="meter" aria-hidden="true"><i style="width:${r ? r.pct : 0}%"></i></div>
+      <p class="best">${r ? `Mejor: <b>${r.pct} %</b> · ${fmt(r.time)} ${r.inTime ? '· ✓ en tiempo' : ''}` : 'Aún sin jugar'}</p>
+      <p class="muted" style="font-size:13px">Tiempo objetivo: ${fmt(target)}</p>
+      <button class="btn primary" data-go="${k}:${g}">${r ? 'Volver a jugar' : 'Jugar'}</button>
+    </article>`;
+  }).join('');
+  show(`
+    <div class="planet-head" style="--gc:${G.color}">
+      <button class="btn" data-go="map">← Mapa</button>
+      <span class="orb" aria-hidden="true"><span>${g}</span></span>
+      <div class="grow"><h1>Grupo ${g} · ${G.name}</h1>
+        <p class="muted">${starsHTML(info.stars)} ${info.played === 3 ? `Media: ${Math.round(info.avg)} %` : `Juega los 3 minijuegos (${info.played}/3)`}</p></div>
+    </div>
+    <div class="planet-body" style="--gc:${G.color}">
+      <aside class="card study" aria-label="Fichas del grupo">
+        <h3>Fichas de los ${G.name}</h3>
+        <ol>${els.map(e => `<li><span class="tile">${e.symbol}</span><span><b>${e.name}</b><br><span class="muted" style="font-size:13px">Periodo ${e.period}</span></span></li>`).join('')}</ol>
+        ${g === 1 ? '<p class="note">El hidrógeno (H) está encima del grupo 1, pero <b>no</b> es un alcalino: no pertenece a ningún grupo.</p>' : ''}
+      </aside>
+      <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+        <div class="games">${cards}</div>
+        <p class="rules">${STAR(true)} media ≥ 60 % · ${STAR(true)}${STAR(true)} ≥ 80 % · ${STAR(true)}${STAR(true)}${STAR(true)} ≥ 95 % y los tres minijuegos dentro de su tiempo objetivo.</p>
+      </div>
+    </div>`, 'planet');
+};
+
+/* ---------- 7.3 RESULTADOS de un minijuego ---------- */
+function finishGame(g, game, rec, lines = [], extra = '') {
+  const before = planetStars(g), finalBefore = finalUnlocked();
+  const old = (S.games[g] || {})[game];
+  const isBest = !old || better(rec, old);
+  if (isBest) { S.games[g] = S.games[g] || {}; S.games[g][game] = rec; }
+  save();
+  const info = planetInfo(g);
+  const i = ORDER.indexOf(g);
+  let unlock = '';
+  if (before < 1 && info.stars >= 1) {
+    unlock = i < ORDER.length - 1 ? `¡Nuevo planeta desbloqueado: <b>${GROUP[ORDER[i + 1]].name}</b>!` : (!finalBefore ? '¡Has desbloqueado la <b>Prueba final</b>!' : '');
+  }
+  checkBadges();
+  Sound.play(rec.pct >= 60 ? 'win' : 'bad');
+  const nextGame = GAME_KEYS.find(k => !(S.games[g] || {})[k]);
+  const G = GROUP[g];
+  show(`
+    <div class="card result" style="--gc:${G.color}">
+      <p class="qtype">${GAMES[game].title} · ${G.name}</p>
+      <h2>${rec.pct >= 95 ? '¡Impecable!' : rec.pct >= 80 ? '¡Muy bien!' : rec.pct >= 60 ? '¡Superado!' : 'Sigue practicando'}</h2>
+      <div class="big-pct">${rec.pct} %</div>
+      <div class="lines"><span class="pill">Tiempo ${fmt(rec.time)}</span><span class="pill">${rec.inTime ? '✓ Dentro del tiempo objetivo' : 'Fuera del tiempo objetivo (' + fmt(GAMES[game].target(elementsOf(g).length)) + ')'}</span>${lines.map(l => `<span class="pill">${l}</span>`).join('')}${isBest && old ? '<span class="pill" style="background:#e8f5ec;color:#0f5a2a">Nuevo récord</span>' : ''}</div>
+      ${extra}
+      <div><p class="muted">Estrellas del planeta</p>${starsHTML(info.stars, true)}<p class="muted" style="font-size:13px">${info.played < 3 ? `Te faltan ${3 - info.played} minijuego(s) para conseguir estrellas.` : `Media de los 3 minijuegos: ${Math.round(info.avg)} %`}</p></div>
+      ${unlock ? `<p class="unlock">${unlock}</p>` : ''}
+      <div class="actions">
+        <button class="btn" data-go="${game}:${g}">Repetir</button>
+        ${nextGame ? `<button class="btn primary" data-go="${nextGame}:${g}">Siguiente: ${GAMES[nextGame].title}</button>` : `<button class="btn primary" data-go="planet:${g}">Volver al planeta</button>`}
+        <button class="btn" data-go="map">Mapa</button>
+      </div>
+    </div>`, 'result-screen');
+}
+
+/* ---------- 7.4 PAREJAS (memory) ---------- */
+ROUTES.mem = function (g) {
+  if (!GROUP[g] || !isUnlocked(g)) return go('map');
+  const G = GROUP[g], els = elementsOf(g), n = els.length;
+  const cards = shuffle(els.flatMap(e => [{ e, kind: 'name' }, { e, kind: 'sym' }]));
+  const cols = n === 5 ? 5 : 4;
+  const st = { moves: 0, matched: 0, first: null, lock: true, start: 0, up: new Set(), done: new Set() };
+  const scr = show(`
+    <div class="quiz-top">
+      <button class="btn" data-go="planet:${g}">← Salir</button>
+      <div class="quiz-title"><h2>Parejas · ${G.name}</h2><span class="muted">Empareja cada nombre con su símbolo.</span></div>
+      <div class="quiz-stats"><span class="pill" id="mInfo">Memoriza…</span><span class="pill" id="mMoves">Movimientos: 0</span><span class="pill" id="mTime">0:00</span></div>
+    </div>
+    <div class="mgrid" style="--cols:${cols};--gc:${G.color}">
+      ${cards.map((c, i) => `<button class="mcard up" data-i="${i}" aria-label="${c.kind === 'name' ? c.e.name : 'Símbolo ' + c.e.symbol}">
+        <span class="in"><span class="face back"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="#fff"/><ellipse cx="12" cy="12" rx="11" ry="3.5" fill="none" stroke="#fff" stroke-width="1.6" transform="rotate(-20 12 12)"/></svg></span>
+        <span class="face front">${c.kind === 'sym' ? `<small>Símbolo</small><span class="s">${c.e.symbol}</span>` : `<small>Nombre</small><span class="n">${c.e.name}</span>`}</span></span></button>`).join('')}
+    </div>
+    <div class="qfoot"><p class="feedback" id="mFb" role="status">Tienes unos segundos para ver todas las cartas.</p></div>`, 'mem');
+  const btns = $$('.mcard', scr), fb = $('#mFb'), info = $('#mInfo');
+  const setCard = (i, up) => { const b = btns[i], c = cards[i]; b.classList.toggle('up', up); b.setAttribute('aria-label', up ? (c.kind === 'name' ? c.e.name : 'Símbolo ' + c.e.symbol) : 'Carta boca abajo ' + (i + 1)); };
+  let left = 4; info.textContent = `Memoriza… ${left}`;
+  const cd = every(() => {
+    left--; info.textContent = `Memoriza… ${left}`;
+    if (left <= 0) {
+      clearInterval(cd); btns.forEach((b, i) => setCard(i, false)); st.lock = false; st.start = performance.now();
+      info.textContent = `Parejas: 0/${n}`; fb.textContent = 'Toca dos cartas: un nombre y su símbolo.'; Sound.play('flip');
+      every(() => { $('#mTime').textContent = fmt((performance.now() - st.start) / 1000); }, 500);
+    }
+  }, 1000);
+  scr.addEventListener('click', e => {
+    const b = e.target.closest('.mcard'); if (!b || st.lock) return;
+    const i = +b.dataset.i; if (st.done.has(i) || st.up.has(i)) return;
+    setCard(i, true); st.up.add(i); Sound.play('flip');
+    if (st.first === null) { st.first = i; return; }
+    const a = st.first; st.first = null; st.moves++; $('#mMoves').textContent = 'Movimientos: ' + st.moves;
+    const A = cards[a], B = cards[i];
+    if (A.e === B.e && A.kind !== B.kind) {
+      [a, i].forEach(k => { st.done.add(k); st.up.delete(k); btns[k].classList.add('matched'); btns[k].disabled = true; btns[k].setAttribute('aria-label', A.e.name + ' = ' + A.e.symbol + ', emparejada'); });
+      st.matched++; info.textContent = `Parejas: ${st.matched}/${n}`; fb.className = 'feedback ok'; fb.textContent = `¡Bien! ${A.e.name} = ${A.e.symbol}`; Sound.play('match');
+      if (st.matched === n) {
+        st.lock = true; const time = (performance.now() - st.start) / 1000;
+        const pct = Math.min(100, Math.round(100 * (n + 2) / st.moves));
+        later(() => finishGame(g, 'mem', { pct, time: Math.round(time), inTime: time <= GAMES.mem.target(n), hints: 0, date: Date.now() }, [`${st.moves} movimientos`]), 700);
+      }
+    } else {
+      // Error: mostramos la pareja correcta de cada carta durante 1,7 s
+      st.lock = true; [a, i].forEach(k => btns[k].classList.add('wrong')); Sound.play('bad');
+      const say = c => c.kind === 'name' ? `${c.e.name} → ${c.e.symbol}` : `${c.e.symbol} → ${c.e.name}`;
+      fb.className = 'feedback bad'; fb.textContent = `No son pareja. Recuerda: ${say(A)} · ${say(B)}`;
+      later(() => { [a, i].forEach(k => { btns[k].classList.remove('wrong'); setCard(k, false); st.up.delete(k); }); st.lock = false; }, 1700);
+    }
+  });
+};
+
+/* ---------- 7.5 MOTOR DE PREGUNTAS (ronda rápida, práctica, hidrógeno) ---------- */
+function runQuiz(cfg) {
+  // cfg: {title, sub, color, total, lives, perQ, hint, combo, next(st), onEnd(res), exit}
+  const infinite = !isFinite(cfg.total);
+  const st = { answered: 0, correct: 0, lives: cfg.lives || 0, streak: 0, maxStreak: 0, points: 0, time: 0, hints: 0, hintUsed: false, wrongs: [], seen: new Set(), locked: true, q: null, t0: 0, last: null, ended: false };
+  const scr = show(`
+    <div class="quiz-top">
+      <button class="btn" id="qExit">← Salir</button>
+      <div class="quiz-title"><h2>${cfg.title}</h2><span class="muted">${cfg.sub || ''}</span></div>
+      <div class="quiz-stats">
+        <span class="pill" id="qProg"></span>
+        ${cfg.lives ? '<span class="pill lives" id="qLives"></span>' : ''}
+        ${cfg.combo ? '<span class="pill combo" id="qCombo">Combo ×1</span><span class="pill" id="qPts">0 pts</span>' : ''}
+      </div>
+    </div>
+    ${cfg.perQ ? '<div class="qtimer" id="qTimer" aria-hidden="true"><div id="qBar"></div></div>' : ''}
+    <div class="card qcard" style="--gc:${cfg.color}"><p class="qtype" id="qType"></p><h3 class="qtext" id="qText"></h3></div>
+    <div class="options" id="qOpts" role="group" aria-label="Opciones"></div>
+    <div class="qfoot"><p class="feedback" id="qFb" role="status" aria-live="polite"></p>
+      <div class="qfoot-actions">${cfg.hint ? '<button class="btn" id="qHint" title="Elimina dos opciones incorrectas (una vez por ronda)">Pista 50 %</button>' : ''}${infinite ? '<button class="btn" id="qEnd">Terminar</button>' : ''}</div></div>`, 'quiz');
+  const opts = $('#qOpts'), fb = $('#qFb');
+  $('#qExit').onclick = () => cfg.exit();
+  if (infinite) $('#qEnd').onclick = () => finish();
+  function stats() {
+    $('#qProg').textContent = infinite ? `${st.correct}/${st.answered} aciertos` : `Pregunta ${Math.min(st.answered + 1, cfg.total)}/${cfg.total}`;
+    if (cfg.lives) { const l = $('#qLives'); l.innerHTML = Array.from({ length: cfg.lives }, (_, i) => HEART(i < st.lives)).join(''); l.setAttribute('aria-label', `${st.lives} vidas`); l.setAttribute('role', 'img'); }
+    if (cfg.combo) { $('#qCombo').textContent = `Combo ×${mult()}`; $('#qPts').textContent = `${st.points} pts`; }
+  }
+  const mult = () => Math.min(4, 1 + Math.floor(st.streak / 3));
+  function ask() {
+    let q; for (let k = 0; k < 15; k++) { q = cfg.next(st); if (!st.seen.has(q.sig)) break; }
+    st.seen.add(q.sig); st.q = q; st.last = q.meta.el || null;
+    $('#qType').textContent = TYPE_LABEL[q.type]; $('#qText').innerHTML = q.text;
+    opts.innerHTML = q.options.map((o, i) => `<button class="opt${q.symOpts ? ' symopt' : ''}" data-i="${i}"><kbd>${i + 1}</kbd><span class="lbl">${o.label}</span></button>`).join('');
+    fb.className = 'feedback'; fb.textContent = '';
+    stats(); st.locked = false; st.t0 = performance.now();
+    if (cfg.hint) $('#qHint').disabled = st.hintUsed;
+    if (cfg.perQ) { $('#qBar').style.transform = 'scaleX(1)'; $('#qTimer').classList.remove('low'); }
+  }
+  opts.addEventListener('click', e => { const b = e.target.closest('.opt'); if (b && !b.disabled) answer(+b.dataset.i); });
+  keyHandler = e => { if (/^[1-4]$/.test(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey) { const b = opts.children[+e.key - 1]; if (b && !b.disabled) { e.preventDefault(); answer(+e.key - 1); } } };
+  if (cfg.perQ) every(() => {
+    if (st.locked || st.ended) return;
+    const el = (performance.now() - st.t0) / 1000, f = Math.max(0, 1 - el / cfg.perQ);
+    $('#qBar').style.transform = `scaleX(${f})`; $('#qTimer').classList.toggle('low', f < .3);
+    if (el >= cfg.perQ) answer(-1);
+  }, 100);
+  if (cfg.hint) $('#qHint').onclick = () => {
+    if (st.locked || st.hintUsed) return;
+    st.hintUsed = true; st.hints++; $('#qHint').disabled = true;
+    shuffle(st.q.options.map((o, i) => [o, i]).filter(([o]) => !o.ok)).slice(0, 2).forEach(([, i]) => { const b = opts.children[i]; b.disabled = true; b.classList.add('elim'); });
+  };
+  function answer(i) {
+    if (st.locked || st.ended) return; st.locked = true;
+    const dt = (performance.now() - st.t0) / 1000; st.time += cfg.perQ ? Math.min(dt, cfg.perQ) : dt;
+    const q = st.q, ok = i >= 0 && q.options[i].ok; st.answered++;
+    [...opts.children].forEach((b, k) => { b.disabled = true; if (q.options[k].ok) b.classList.add('ok'); else if (k === i) b.classList.add('bad'); });
+    noteMiss(q.key, ok); noteStreak(ok);
+    if (ok) {
+      st.correct++; st.streak++; st.maxStreak = Math.max(st.maxStreak, st.streak);
+      st.points += 100 * mult() + (cfg.perQ ? Math.round(Math.max(0, cfg.perQ - dt) * 5) : 0);
+      fb.className = 'feedback ok'; fb.textContent = '¡Correcto! ' + q.explain; Sound.play('ok');
+      if (cfg.combo && st.streak % 3 === 0) { const c = $('#qCombo'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+    } else {
+      st.streak = 0; if (cfg.lives) st.lives--; st.wrongs.push(q);
+      fb.className = 'feedback bad'; fb.textContent = (i < 0 ? '¡Se acabó el tiempo! ' : 'No es correcto. ') + q.explain; Sound.play('bad');
+    }
+    announce(fb.textContent); stats(); save(); checkBadges();
+    later(() => { if ((!infinite && st.answered >= cfg.total) || (cfg.lives && st.lives <= 0)) finish(); else ask(); }, ok ? 900 : 1800);
+  }
+  function finish() { if (st.ended) return; st.ended = true; st.locked = true; save(); cfg.onEnd({ ...st, died: !!cfg.lives && st.lives <= 0 }); }
+  ask();
+}
+
+/* Ronda rápida de un planeta */
+ROUTES.quiz = function (g) {
+  if (!GROUP[g] || !isUnlocked(g)) return go('map');
+  const types = shuffle(['sym2name', 'sym2name', 'sym2name', 'name2sym', 'name2sym', 'name2sym', 'elem2group', 'elem2group', 'group2num', 'notin']);
+  runQuiz({
+    title: `Ronda rápida · ${GROUP[g].name}`, sub: `Teclas 1–4 para responder · ${QUIZ_PER_Q} s por pregunta`, color: GROUP[g].color,
+    total: 10, lives: 3, perQ: QUIZ_PER_Q, hint: true, combo: true,
+    next: st => planetQuestion(g, types[st.answered], st.last),
+    exit: () => go('planet', g),
+    onEnd: r => {
+      const pct = Math.round(100 * r.correct / 10);
+      const wrongEls = [...new Set(r.wrongs.map(q => q.meta.el ? elLabel(q.meta.el) : (q.meta.out ? elLabel(q.meta.out) : GROUP[q.meta.g].name)))];
+      finishGame(g, 'quiz', { pct, time: Math.round(r.time), inTime: !r.died && r.time <= GAMES.quiz.target(), hints: r.hints, date: Date.now() },
+        [`${r.correct}/10 aciertos`, `Mejor racha ${r.maxStreak}`, `${r.points} pts`, ...(r.died ? ['Sin vidas'] : []), ...(r.hints ? ['Usaste pista'] : [])],
+        wrongEls.length ? `<div><p class="muted" style="margin-bottom:6px">Repasa:</p><div class="wronglist">${wrongEls.map(w => `<span>${w}</span>`).join('')}</div></div>` : '');
+    },
+  });
+};
+
+/* ---------- 7.6 CONSTRUYE LA COLUMNA ---------- */
+ROUTES.col = function (g) {
+  if (!GROUP[g] || !isUnlocked(g)) return go('map');
+  const G = GROUP[g], els = elementsOf(g), n = els.length;
+  const st = { placed: new Set(), errors: new Set(), hints: 0, lock: false, start: performance.now(), done: false };
+  const tray = shuffle(els);
+  const scr = show(`
+    <div class="quiz-top">
+      <button class="btn" data-go="planet:${g}">← Salir</button>
+      <div class="quiz-title"><h2>Construye la columna · ${G.name}</h2><span class="muted">Arrastra cada elemento a su periodo, o tócalo y después toca la casilla.</span></div>
+      <div class="quiz-stats"><span class="pill" id="cTime">0:00</span><span class="pill" id="cErr">Errores: 0</span><button class="btn" id="cHint">Pista</button></div>
+    </div>
+    <div class="col-body" id="cRoot" style="--gc:${G.color}">
+      <div class="colwrap">
+        <div class="colhead">Grupo ${g}<br><b>${G.name}</b></div>
+        ${g === 1 ? `<div class="hslot" aria-label="Hidrógeno, periodo 1, fuera del grupo"><b>H</b><span>Periodo 1 · Hidrógeno<br>(sin grupo, no es alcalino)</span></div>` : ''}
+        ${els.map(e => `<button class="slot" data-drop="p${e.period}" aria-label="Periodo ${e.period}: vacía"><span class="per">Periodo ${e.period}</span><span class="tileholder"></span></button>`).join('')}
+      </div>
+      <div class="tray col-tray" aria-label="Elementos por colocar">
+        ${tray.map(e => `<button class="chip" data-item="${e.symbol}" aria-label="${e.name}, ${e.symbol}"><b>${e.symbol}</b><small>${e.name}</small></button>`).join('')}
+      </div>
+    </div>
+    <div class="qfoot"><p class="feedback" id="cFb" role="status" aria-live="polite">Ordena de arriba (periodo menor) a abajo (periodo mayor).</p></div>`, 'col');
+  const root = $('#cRoot'), fb = $('#cFb');
+  every(() => { if (!st.done) $('#cTime').textContent = fmt((performance.now() - st.start) / 1000); }, 500);
+  const slotOf = p => root.querySelector(`[data-drop="p${p}"]`);
+  const dnd = attachDnD(root, {
+    isLocked: () => st.lock || st.done,
+    onDrop(sym, target) {
+      const e = BY_SYMBOL[sym]; if (!e || !target.startsWith('p')) return;
+      const p = +target.slice(1), slot = slotOf(p);
+      if (slot.classList.contains('filled')) return;
+      if (p === e.period) {
+        st.placed.add(sym); noteMiss(sym, true);
+        slot.classList.add('filled'); slot.removeAttribute('data-drop'); slot.setAttribute('aria-label', `Periodo ${p}: ${e.name}, ${e.symbol}`);
+        slot.querySelector('.tileholder').innerHTML = `<span class="sym">${e.symbol}</span><span>${e.name}</span>`;
+        const chip = root.querySelector(`[data-item="${sym}"]`); if (chip) chip.remove();
+        fb.className = 'feedback ok'; fb.textContent = `¡Bien! ${e.name} está en el periodo ${p}.`; Sound.play('ok');
+        const next = root.querySelector('.chip'); if (next) next.focus({ preventScroll: true }); else slot.focus();
+        if (st.placed.size === n) done();
+      } else {
+        st.errors.add(sym); noteMiss(sym, false); st.lock = true; $('#cErr').textContent = `Errores: ${st.errors.size}`;
+        slot.classList.add('wrong'); const right = slotOf(e.period); right && right.classList.add('target');
+        fb.className = 'feedback bad'; fb.textContent = `No. El ${e.name} (${e.symbol}) va en el periodo ${e.period}.`; announce(fb.textContent); Sound.play('bad');
+        later(() => { slot.classList.remove('wrong'); right && right.classList.remove('target'); st.lock = false; const c = root.querySelector(`[data-item="${sym}"]`); if (c) c.focus({ preventScroll: true }); }, 1700);
+      }
+    },
+  });
+  $('#cHint').onclick = () => {
+    if (st.lock || st.done) return;
+    let sym = dnd.selected; if (!sym) { const c = root.querySelector('.chip'); if (!c) return; sym = c.dataset.item; dnd.select(sym); }
+    st.hints++; const s = slotOf(BY_SYMBOL[sym].period); s.classList.add('target');
+    fb.className = 'feedback'; fb.textContent = `Pista: el ${BY_SYMBOL[sym].name} va en la casilla resaltada.`;
+    later(() => s.classList.remove('target'), 1600);
+  };
+  function done() {
+    st.done = true; const time = (performance.now() - st.start) / 1000;
+    const pct = Math.round(100 * (n - st.errors.size) / n);
+    later(() => finishGame(g, 'col', { pct, time: Math.round(time), inTime: time <= GAMES.col.target(n), hints: st.hints, date: Date.now() },
+      [`${n - st.errors.size}/${n} a la primera`, ...(st.hints ? [`${st.hints} pista(s)`] : [])]), 700);
+  }
+};
+
+/* ---------- 7.7 PRUEBA FINAL ---------- */
+const COL = { 1: 2, 2: 3, 13: 5, 14: 6, 15: 7, 16: 8, 17: 9, 18: 10 };
+// Guiones opcionales (&shy;) para que los nombres largos se partan bien en columnas estrechas
+const SHY = { 'Alcalinotérreos': 'Alcalino&shy;térreos', 'Carbonoideos': 'Carbo&shy;noideos', 'Pnictógenos': 'Pnictó&shy;genos', 'Halógenos': 'Haló&shy;genos', 'Anfígenos': 'Anfí&shy;genos' };
+const shy = n => SHY[n] || n;
+ROUTES.final = function () {
+  if (!finalUnlocked()) return go('map');
+  // cell[i] = símbolo colocado en la casilla del elemento i ; lab[g] = índice de etiqueta colocada en la columna g
+  const labOrder = shuffle(ORDER);
+  const st = { cell: {}, lab: {}, start: performance.now(), done: false, symOrder: shuffle(ELEMENTS.map(e => e.symbol)) };
+  const scr = show(`
+    <div class="quiz-top">
+      <button class="btn" id="fExit">← Mapa</button>
+      <div class="quiz-title"><h2>Prueba final</h2><span class="muted">Coloca los 44 símbolos y pon a cada columna su nombre de grupo. Arrastra, o toca y coloca.</span></div>
+      <div class="quiz-stats"><span class="pill" id="fTime">${fmt(FINAL_LIMIT)}</span><span class="pill" id="fCount">0/${FINAL_TOTAL}</span><button class="btn primary" id="fDone">Corregir</button></div>
+    </div>
+    <div class="final-body" id="fRoot"><div class="ptable" id="ptable"></div><aside class="side" id="side"></aside></div>`, 'final');
+  const root = $('#fRoot');
+  const placedAt = sym => { for (const k in st.cell) if (st.cell[k] === sym) return +k; return null; };
+  const labelAt = li => { for (const k in st.lab) if (st.lab[k] === li) return +k; return null; };
+  function render(focusDrop) {
+    let h = '';
+    for (let p = 1; p <= 7; p++) h += `<div class="pnum" style="grid-column:1;grid-row:${p + 2}" aria-hidden="true">${p}</div>`;
+    ORDER.forEach(g => {
+      const G = GROUP[g], li = st.lab[g], c = COL[g];
+      h += `<div class="gnum" style="grid-column:${c};grid-row:1;--gc:${G.color}">${g}</div>`;
+      let cls = 'lslot' + (li !== undefined ? ' filled' : ''), inner = li !== undefined ? shy(GROUP[labOrder[li]].name) : '<span class="ph" aria-hidden="true">?</span>';
+      if (st.done) { const ok = li !== undefined && labOrder[li] === g; cls += ok ? ' ok' : ' bad'; inner = ok ? shy(G.name) : `${li !== undefined ? `<s>${shy(GROUP[labOrder[li]].name)}</s>` : ''}<span>${shy(G.name)}</span>`; }
+      h += `<button class="${cls}" style="grid-column:${c};grid-row:2;--gc:${G.color}" ${st.done ? 'disabled' : `data-drop="l:${g}"`} ${li !== undefined && !st.done ? `data-item="g:${li}"` : ''}
+        aria-label="Nombre de la columna del grupo ${g}: ${li !== undefined ? GROUP[labOrder[li]].name : 'vacía'}">${inner}</button>`;
+    });
+    ELEMENTS.forEach((e, i) => {
+      const sym = st.cell[i], col = e.group === null ? 2 : COL[e.group];
+      let cls = 'pcell' + (sym ? ' filled' : '') + (e.group === null ? ' hcell' : ''), inner = sym || '';
+      if (st.done) { const ok = sym === e.symbol; cls += ok ? ' ok' : ' bad'; inner = ok ? sym : `${sym ? `<s>${sym}</s>` : ''}<b>${e.symbol}</b>`; }
+      const where = e.group === null ? 'Casilla del periodo 1 separada, sin grupo' : `Grupo ${e.group}, periodo ${e.period}`;
+      h += `<button class="${cls}" style="grid-column:${col};grid-row:${e.period + 2};--gc:${colorOf(e)}" ${st.done ? 'disabled' : `data-drop="c:${i}"`} ${sym && !st.done ? `data-item="s:${sym}"` : ''}
+        aria-label="${where}: ${sym || 'vacía'}${st.done && sym !== e.symbol ? '. Correcto: ' + e.symbol : ''}">${inner}</button>`;
+    });
+    $('#ptable').innerHTML = h;
+    if (!st.done) {
+      const syms = st.symOrder.filter(s => placedAt(s) === null), labs = labOrder.map((_, i) => i).filter(i => labelAt(i) === null);
+      $('#side').innerHTML = `
+        <h3>Símbolos (${syms.length})</h3>
+        <div class="tray final-tray" data-drop="tray" aria-label="Bandeja de símbolos">${syms.map(s => `<button class="tchip" data-item="s:${s}" aria-label="Símbolo ${s}">${s}</button>`).join('') || '<span class="muted">¡Todos colocados!</span>'}</div>
+        <h3>Nombres de grupo (${labs.length})</h3>
+        <div class="tray final-tray" data-drop="tray" aria-label="Bandeja de nombres">${labs.map(i => `<button class="lchip" data-item="g:${i}">${GROUP[labOrder[i]].name}</button>`).join('') || '<span class="muted">¡Todos colocados!</span>'}</div>
+        <p class="muted" style="font-size:13px">Puedes mover lo que ya has colocado. Con teclado: Intro para elegir y colocar, Supr para devolver a la bandeja, Esc para cancelar.</p>`;
+      const n = Object.keys(st.cell).length + Object.keys(st.lab).length; $('#fCount').textContent = `${n}/${FINAL_TOTAL}`;
+    }
+    if (focusDrop) { const el = root.querySelector(`[data-drop="${focusDrop}"]`) || root.querySelector('.tchip, .lchip'); if (el) el.focus({ preventScroll: true }); }
+  }
+  attachDnD(root, {
+    trayId: 'tray', isLocked: () => st.done,
+    onDrop(item, target) {
+      const [kind, v] = [item.slice(0, 1), item.slice(2)];
+      if (kind === 's') {
+        const from = placedAt(v);
+        if (target === 'tray') { if (from !== null) delete st.cell[from]; }
+        else if (target.startsWith('c:')) {
+          const to = +target.slice(2); if (to === from) return;
+          const occ = st.cell[to]; st.cell[to] = v;
+          if (from !== null) { if (occ) st.cell[from] = occ; else delete st.cell[from]; }
+        } else return;
+      } else {
+        const li = +v, from = labelAt(li);
+        if (target === 'tray') { if (from !== null) delete st.lab[from]; }
+        else if (target.startsWith('l:')) {
+          const to = +target.slice(2); if (to === from) return;
+          const occ = st.lab[to]; st.lab[to] = li;
+          if (from !== null) { if (occ !== undefined) st.lab[from] = occ; else delete st.lab[from]; }
+        } else return;
+      }
+      Sound.play('tap'); render(target === 'tray' ? null : target);
+    },
+  });
+  $('#fExit').onclick = async () => { if (await confirmDialog('¿Salir de la prueba?', 'Perderás lo que has colocado en esta partida.', 'Salir')) go('map'); };
+  $('#fDone').onclick = async () => {
+    const n = Object.keys(st.cell).length + Object.keys(st.lab).length;
+    if (n < FINAL_TOTAL && !(await confirmDialog('¿Corregir ya?', `Aún te quedan ${FINAL_TOTAL - n} por colocar. Las casillas vacías contarán como fallo.`, 'Corregir'))) return;
+    grade(false);
+  };
+  every(() => {
+    if (st.done) return; const left = FINAL_LIMIT - (performance.now() - st.start) / 1000;
+    $('#fTime').textContent = fmt(left); if (left <= 0) { if ($('#dlg').open) $('#dlg').close('no'); grade(true); }
+  }, 250);
+  function grade(timeout) {
+    if (st.done) return; st.done = true;
+    const time = Math.min(FINAL_LIMIT, (performance.now() - st.start) / 1000);
+    let score = 0;
+    ELEMENTS.forEach((e, i) => { const ok = st.cell[i] === e.symbol; if (ok) score++; noteMiss(e.symbol, ok); });
+    ORDER.forEach(g => { const ok = st.lab[g] !== undefined && labOrder[st.lab[g]] === g; if (ok) score++; noteMiss('g' + g, ok); });
+    const rec = { score, total: FINAL_TOTAL, time: Math.round(time), date: Date.now() };
+    const isBest = !S.final || score > S.final.score || (score === S.final.score && rec.time < S.final.time);
+    if (isBest) S.final = rec; save(); checkBadges();
+    render(); Sound.play(score >= FINAL_TOTAL * .6 ? 'win' : 'bad');
+    const pct = Math.round(100 * score / FINAL_TOTAL);
+    $('#fDone').disabled = true; $('#fExit').onclick = () => go('map');
+    $('#side').innerHTML = `
+      <div class="card result" style="margin:0;padding:18px">
+        <p class="qtype" style="--gc:#0055cc">${timeout ? '¡Tiempo!' : 'Corrección'}</p>
+        <div class="big-pct">${score}/${FINAL_TOTAL}</div>
+        <div class="lines"><span class="pill">${pct} %</span><span class="pill">Tiempo ${fmt(time)}</span>${isBest ? '<span class="pill" style="background:#e8f5ec;color:#0f5a2a">Mejor resultado</span>' : ''}</div>
+        ${starsHTML(pct >= 95 ? 3 : pct >= 80 ? 2 : pct >= 60 ? 1 : 0, true)}
+        <p class="muted">En <b style="color:var(--red)">rojo</b>, las casillas falladas con la respuesta correcta. Tachado, lo que habías puesto.</p>
+        <div class="actions"><button class="btn primary" data-go="final">Repetir</button><button class="btn" data-go="practice">Practicar fallos</button><button class="btn" data-go="map">Mapa</button></div>
+      </div>`;
+    announce(`Prueba corregida: ${score} de ${FINAL_TOTAL}.`);
+  }
+  render();
+};
+
+/* ---------- 7.8 PRÁCTICA LIBRE ---------- */
+ROUTES.practice = function () {
+  const cfg = Object.assign({ groups: [1], type: 'mix', onlyMiss: false }, S.prac || {});
+  const types = [['mix', 'Mezcla de todo'], ...Object.entries(TYPE_LABEL)];
+  const misses = Object.entries(S.miss).filter(([k]) => BY_SYMBOL[k]).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const scr = show(`
+    <div class="bar"><div class="grow"><h1>Práctica libre</h1><p class="muted">Sin vidas ni tiempo. Elige qué repasar: lo que más falles saldrá más a menudo.</p></div><button class="btn" data-go="map">← Mapa</button></div>
+    <div class="prac-grid">
+      <section class="card" aria-labelledby="pg1"><h3 id="pg1">1. Elige uno o varios grupos</h3>
+        <div class="gtoggles">${ORDER.map(g => `<button class="gtoggle" style="--gc:${GROUP[g].color}" data-g="${g}" aria-pressed="${cfg.groups.includes(g)}"><small>Grupo ${g}</small><b>${GROUP[g].name}</b></button>`).join('')}
+          <button class="gtoggle" style="--gc:${H_COLOR}" data-g="H" aria-pressed="${cfg.groups.includes('H')}"><small>Sin grupo</small><b>Hidrógeno</b></button></div>
+        <div class="bar"><button class="btn" id="pAll">Todos</button><button class="btn" id="pNone">Ninguno</button></div>
+      </section>
+      <section class="card" aria-labelledby="pg2"><h3 id="pg2">2. Tipo de pregunta</h3>
+        <div class="radios" role="radiogroup">${types.map(([k, l]) => `<label><input type="radio" name="ptype" value="${k}" ${cfg.type === k ? 'checked' : ''}>${l}</label>`).join('')}</div>
+        <label class="switch"><input type="checkbox" id="pMiss" ${cfg.onlyMiss ? 'checked' : ''}>Solo los elementos que más fallo</label>
+        ${misses.length ? `<div><p class="muted" style="font-size:13px;margin-bottom:6px">Tus fallos frecuentes:</p><div class="misslist">${misses.map(([k]) => `<span class="tile" style="--gc:${colorOf(BY_SYMBOL[k])};width:auto;padding:0 8px;font-size:15px;height:34px" title="${BY_SYMBOL[k].name}">${k}</span>`).join('')}</div></div>` : '<p class="muted" style="font-size:13px">Aún no hay fallos registrados.</p>'}
+        <p class="feedback bad" id="pErr" role="alert"></p>
+        <button class="btn primary" id="pGo">Empezar práctica</button>
+      </section>
+    </div>`, 'practice');
+  const sync = () => { cfg.groups = $$('.gtoggle', scr).filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.g === 'H' ? 'H' : +b.dataset.g); };
+  scr.addEventListener('click', e => { const b = e.target.closest('.gtoggle'); if (b) { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); sync(); } });
+  $('#pAll').onclick = () => { $$('.gtoggle', scr).forEach(b => b.setAttribute('aria-pressed', 'true')); sync(); };
+  $('#pNone').onclick = () => { $$('.gtoggle', scr).forEach(b => b.setAttribute('aria-pressed', 'false')); sync(); };
+  $('#pGo').onclick = () => {
+    sync(); cfg.type = ($('input[name=ptype]:checked', scr) || {}).value || 'mix'; cfg.onlyMiss = $('#pMiss').checked;
+    if (!cfg.groups.length) { $('#pErr').textContent = 'Elige al menos un grupo.'; return; }
+    if (!practiceTypes(cfg).length) { $('#pErr').textContent = 'Ese tipo de pregunta necesita al menos un grupo (el hidrógeno no tiene número ni miembros).'; return; }
+    S.prac = { ...cfg }; save(); startPractice(cfg);
+  };
+};
+function startPractice(cfg) {
+  runQuiz({
+    title: 'Práctica libre', sub: cfg.groups.map(n => n === 'H' ? 'Hidrógeno' : GROUP[n].name).join(' · '), color: '#0055cc',
+    total: Infinity, lives: 0, perQ: 0, hint: false, combo: false,
+    next: st => practiceQuestion(cfg, st.last),
+    exit: () => go('practice'),
+    onEnd: r => {
+      const wrong = [...new Set(r.wrongs.map(q => q.meta.el ? elLabel(q.meta.el) : (q.meta.out ? elLabel(q.meta.out) : GROUP[q.meta.g].name)))];
+      const pct = r.answered ? Math.round(100 * r.correct / r.answered) : 0;
+      show(`<div class="card result"><p class="qtype" style="--gc:#0055cc">Práctica libre</p><h2>Resumen</h2>
+        <div class="big-pct">${r.correct}/${r.answered}</div><div class="lines"><span class="pill">${pct} % de aciertos</span><span class="pill">Mejor racha ${r.maxStreak}</span></div>
+        ${wrong.length ? `<div><p class="muted" style="margin-bottom:6px">Para repasar:</p><div class="wronglist">${wrong.map(w => `<span>${w}</span>`).join('')}</div></div>` : (r.answered ? '<p class="unlock">¡Sin fallos!</p>' : '')}
+        <div class="actions">${wrong.length ? '<button class="btn primary" id="rMiss">Repasar mis fallos</button>' : ''}<button class="btn" id="rAgain">Seguir practicando</button><button class="btn" data-go="practice">Cambiar ajustes</button><button class="btn" data-go="map">Mapa</button></div></div>`, 'result-screen');
+      const a = $('#rAgain'); if (a) a.onclick = () => startPractice(cfg);
+      const m = $('#rMiss'); if (m) m.onclick = () => startPractice({ ...cfg, onlyMiss: true });
+    },
+  });
+}
+
+/* ---------- 7.9 HIDRÓGENO ---------- */
+ROUTES.hydrogen = function () {
+  show(`
+    <div class="bar"><button class="btn" data-go="map">← Mapa</button></div>
+    <div class="card hcard">
+      <div class="hbig" aria-hidden="true">H<small>sin grupo</small></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h1>Hidrógeno (H)</h1>
+        <p>Está en el <b>periodo 1</b>, colocado encima del grupo 1, pero <b>no pertenece a ningún grupo</b>. No es un alcalino.</p>
+        <p class="muted">Por eso en la tabla del juego aparece separado, con borde discontinuo.</p>
+        <div class="bar"><button class="btn primary" id="hGo">Mini reto (3 preguntas)</button>${S.hDone ? '<span class="pill" style="background:#e8f5ec;color:#0f5a2a">✓ Completado</span>' : ''}</div>
+      </div>
+    </div>`, 'hydrogen');
+  $('#hGo').onclick = () => {
+    const qs = shuffle([Q.name2sym(HYDROGEN), Q.sym2name(HYDROGEN), Q.elem2group(HYDROGEN)]);
+    runQuiz({
+      title: 'Mini reto · Hidrógeno', sub: 'Sin tiempo ni vidas', color: H_COLOR, total: 3, lives: 0, perQ: 0, hint: false, combo: false,
+      next: st => qs[st.answered], exit: () => go('hydrogen'),
+      onEnd: r => {
+        if (r.correct === 3) { S.hDone = true; save(); }
+        Sound.play(r.correct === 3 ? 'win' : 'bad');
+        show(`<div class="card result"><p class="qtype" style="--gc:${H_COLOR}">Mini reto · Hidrógeno</p><h2>${r.correct === 3 ? '¡Perfecto!' : 'Casi'}</h2><div class="big-pct">${r.correct}/3</div>
+          <p class="muted">Recuerda: H = Hidrógeno, y no pertenece a ningún grupo.</p>
+          <div class="actions"><button class="btn" data-go="hydrogen">Repetir</button><button class="btn primary" data-go="map">Mapa</button></div></div>`, 'result-screen');
+      },
+    });
+  };
+};
+
+/* ---------- 7.10 LOGROS ---------- */
+ROUTES.achievements = function () {
+  const totalStars = ORDER.reduce((a, g) => a + planetStars(g), 0);
+  show(`
+    <div class="bar"><div class="grow"><h1>Logros</h1><p class="muted">Insignias conseguidas: ${Object.keys(S.badges).length} de ${BADGES.length}</p></div><button class="btn" data-go="map">← Mapa</button></div>
+    <div class="stats"><span class="pill">${STAR(true)} Estrellas ${totalStars}/24</span><span class="pill">Mejor racha: ${S.bestStreak}</span><span class="pill">Racha actual: ${S.streak}</span>
+      <span class="pill">Prueba final: ${S.final ? `${S.final.score}/${S.final.total}` : '—'}</span><span class="pill">Hidrógeno: ${S.hDone ? '✓' : '—'}</span></div>
+    <div class="badges">${BADGES.map(b => { const on = !!S.badges[b.id]; return `<article class="card badge${on ? '' : ' off'}">${b.icon}<div><h3>${b.title}</h3><p>${b.desc}</p><p style="font-size:12px;margin-top:2px">${on ? '✓ Conseguida el ' + new Date(S.badges[b.id]).toLocaleDateString('es-ES') : 'Pendiente'}</p></div></article>`; }).join('')}</div>`, 'achievements');
+};
+
+/* ===================== 8. ARRANQUE ===================== */
+function syncSound() {
+  const b = $('#btnSound'); b.setAttribute('aria-pressed', String(!!S.sound));
+  $('#soundLbl').textContent = S.sound ? 'Sonido: sí' : 'Sonido: no'; b.setAttribute('aria-label', S.sound ? 'Desactivar sonido' : 'Activar sonido');
+  b.querySelector('.w').style.display = S.sound ? '' : 'none'; b.querySelector('.x').style.display = S.sound ? 'none' : '';
+}
+$('#btnSound').onclick = () => { S.sound = !S.sound; save(); syncSound(); Sound.play('ok'); };
+$('#btnReset').onclick = async () => {
+  if (await confirmDialog('¿Reiniciar el progreso?', 'Se borrarán estrellas, insignias, récords y fallos guardados en este dispositivo. No se puede deshacer.', 'Reiniciar')) {
+    const sound = S.sound; S = defaultState(); S.sound = sound; save(); go('map'); toast('<b>Progreso reiniciado</b>Empieza de nuevo por los Alcalinos.');
+  }
+};
+const TEST = selfTest();
+if (!TEST.ok) { const b = $('#testBanner'); b.hidden = false; b.textContent = 'Aviso para el profesorado: la autocomprobación del contenido ha fallado. ' + TEST.errors.slice(0, 3).join(' '); }
+syncSound();
+go('map');
+// Acceso para depurar o ampliar desde la consola
+window.EP = { get state() { return S; }, ELEMENTS, GROUPS, selfTest, go, Q, save };
+</script>
+</body>
+</html>
