@@ -1,96 +1,255 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Science 2º ESO · Physics &amp; Chemistry</title>
+<meta name="description" content="Units and games for Physics and Chemistry, 2º ESO.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%230055cc'/%3E%3Cellipse cx='16' cy='16' rx='15' ry='5.5' fill='none' stroke='%23c84800' stroke-width='2.6' transform='rotate(-20 16 16)'/%3E%3Ccircle cx='12.3' cy='12' r='2.8' fill='%23fff' opacity='.55'/%3E%3C/svg%3E">
-<title>Física y Química · 2º ESO</title>
-<meta name="description" content="Apuntes, juegos y ejercicios de Física y Química para 2º ESO.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ───────── Tokens ───────── */
 :root{
-  --bg:#f7f8fc; --surface:#fff; --ink:#172033; --muted:#566074; --line:#e0e4ee; --soft:#eef1f8;
+  --bg:#f7f8fc; --surface:#fff; --ink:#0f1624; --muted:#5a6478; --line:rgba(15,22,36,.08);
   --blue:#0055cc; --green:#167a3b; --orange:#c84800; --amber:#8a5900;
-  --f-title:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
-  --f-text:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f-h:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f-b:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --hdr:68px;
 }
-*{box-sizing:border-box}
-body{margin:0;font-family:var(--f-text);background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--f-title);margin:0;line-height:1.15;letter-spacing:-.01em}
-a{color:inherit}
-:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--f-b);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+h1,h2,h3{font-family:var(--f-h);margin:0;letter-spacing:-.02em;line-height:1.05}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:12px}
 
-/* Cabecera */
-.hero{background:linear-gradient(160deg,#eaf0ff 0%,#f5f1ff 50%,#ebf8f1 100%);border-bottom:1px solid var(--line);position:relative;overflow:hidden}
-.hero .wrap{padding-top:44px;padding-bottom:40px;position:relative;z-index:1}
-.hero svg.deco{position:absolute;right:-30px;top:-20px;width:320px;height:320px;opacity:.28;z-index:0}
-.kicker{display:inline-block;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:#fff;border:1px solid #cfdcf3;border-radius:999px;padding:4px 12px}
-.hero h1{font-size:clamp(30px,5vw,46px);margin-top:14px}
-.hero p{color:var(--muted);font-size:17px;max-width:620px;margin:10px 0 0}
+/* ───────── Fondo ───────── */
+.sky{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:linear-gradient(155deg,#e9f0ff 0%,#f7f8fc 42%,#ecfaf1 78%,#fff6ec 100%)}
+.sky::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(15,22,36,.07) 1px,transparent 1.3px);background-size:26px 26px;
+  -webkit-mask:radial-gradient(ellipse 80% 70% at 50% 45%,#000 30%,transparent 80%);mask:radial-gradient(ellipse 80% 70% at 50% 45%,#000 30%,transparent 80%)}
+.glow{position:absolute;width:48vw;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--c) 0,transparent 66%);animation:glow 24s ease-in-out infinite alternate}
+.glow.g1{--c:rgba(0,85,204,.13);left:-14vw;top:-18vw}
+.glow.g2{--c:rgba(22,122,59,.10);right:-12vw;bottom:-22vw;animation-duration:30s}
+.glow.g3{--c:rgba(200,72,0,.08);right:18vw;top:-20vw;animation-duration:36s}
+@keyframes glow{to{transform:translate(4vw,3vw) scale(1.1)}}
+.formula{position:absolute;font-family:var(--f-h);font-weight:700;color:var(--c,#0055cc);opacity:.07;animation:float 22s ease-in-out infinite;white-space:nowrap}
+@keyframes float{50%{transform:translateY(-26px) rotate(4deg)}}
+.big-atom{position:absolute;right:-90px;bottom:-110px;width:440px;height:440px;opacity:.09}
+.big-atom svg{width:100%;height:100%;animation:spin 90s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* Unidades */
-main{padding:32px 0 48px}
-.unit{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(20,30,60,.05),0 6px 18px rgba(20,30,60,.06);padding:24px;margin-bottom:20px}
-.unit-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-.unit-num{font-family:var(--f-title);font-weight:700;color:#fff;background:var(--blue);border-radius:10px;padding:2px 10px;font-size:15px}
-.unit-head h2{font-size:24px}
-.sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.section h3{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.section h3 svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.item{display:flex;gap:14px;align-items:center;text-decoration:none;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s;min-height:44px}
-a.item:hover{border-color:#9db9e6;box-shadow:0 6px 16px rgba(0,85,204,.12);transform:translateY(-2px)}
-.item .ico{width:52px;height:52px;flex:none;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 32% 28%,#4b84e0 0,#0055cc 60%,#002f73 100%);color:#fff;font-family:var(--f-title);font-weight:700;font-size:20px;position:relative}
-.item .ico::after{content:"";position:absolute;left:-7px;right:-7px;top:50%;height:12px;margin-top:-6px;border-radius:50%;border:2px solid rgba(200,72,0,.75);transform:rotate(-18deg)}
-.item b{display:block;font-family:var(--f-title);font-size:17px}
-.item small{color:var(--muted);font-size:13px}
-.item .go{margin-left:auto;font-weight:700;color:var(--blue);white-space:nowrap}
-.soon{padding:14px;border-radius:14px;border:2px dashed var(--line);color:var(--muted);font-size:14px}
-footer{color:var(--muted);font-size:13px;text-align:center;padding:0 0 32px}
-@media (max-width:860px){.sections{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ───────── Cabecera ───────── */
+header{height:var(--hdr);flex:none;display:flex;align-items:center;gap:14px;padding:0 28px}
+.logo{width:40px;height:40px;flex:none}
+.brand h1{font-size:22px}
+.brand h1 b{color:var(--blue)}
+.brand p{font-size:13px;color:var(--muted);margin-top:2px}
+.meta{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid var(--line);font-family:var(--f-h);font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ───────── Distribución principal ───────── */
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,1fr);gap:22px;padding:6px 28px 24px;max-width:1440px;width:100%;margin:0 auto}
+.col{min-height:0;display:flex;flex-direction:column;gap:12px}
+.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.intro h2{font-size:clamp(24px,2.6vw,34px)}
+.intro h2 span{color:var(--muted);font-weight:500}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);white-space:nowrap}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+/* Rejilla de unidades */
+.units{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:12px}
+.unit{--c:var(--blue);position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:pointer;
+  padding:14px 14px 13px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.78);
+  box-shadow:0 1px 2px rgba(15,22,36,.04);overflow:hidden;min-height:0;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .25s,background .25s}
+.unit.chem{--c:var(--green)} .unit.phys{--c:var(--orange)}
+.unit::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 100% 0%,color-mix(in srgb,var(--c) 10%,transparent),transparent 60%);opacity:.9;pointer-events:none}
+.unit:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 12px 28px color-mix(in srgb,var(--c) 14%,transparent)}
+.unit[aria-pressed="true"]{background:#fff;border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 16%,transparent),0 14px 30px color-mix(in srgb,var(--c) 16%,transparent)}
+.unit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;position:relative}
+.num{font-family:var(--f-h);font-weight:700;font-size:28px;line-height:1;color:var(--c);letter-spacing:-.03em}
+.ill{width:46px;height:46px;flex:none}
+.ill svg{width:100%;height:100%}
+.unit h3{font-size:15px;font-weight:600;line-height:1.2;position:relative}
+.badge{position:absolute;left:14px;top:46px;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#fff;background:var(--c);border-radius:999px;padding:2px 8px}
+.badge svg{width:11px;height:11px}
+.unit.stats{cursor:default;background:linear-gradient(150deg,#0b1f45,#0a3c8f 70%,#0055cc);border:0;color:#fff;justify-content:center;gap:6px}
+.unit.stats::before{display:none}
+.unit.stats:hover{transform:none;box-shadow:none}
+.stats-row{display:flex;gap:18px}
+.stats b{display:block;font-family:var(--f-h);font-size:30px;line-height:1}
+.stats span{font-size:12px;opacity:.75}
+.stats p{font-size:12px;opacity:.75;margin-top:4px}
+
+/* Panel de detalle */
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;border-radius:22px;background:rgba(255,255,255,.88);border:1px solid var(--line);
+  box-shadow:0 20px 50px rgba(15,22,36,.08);overflow:hidden;--c:var(--blue)}
+.panel.chem{--c:var(--green)} .panel.phys{--c:var(--orange)}
+.panel-head{position:relative;padding:22px 24px 18px;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 12%,#fff),#fff 70%);border-bottom:1px solid var(--line);display:flex;gap:16px;align-items:center}
+.panel-head::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--c),transparent)}
+.panel-num{font-family:var(--f-h);font-weight:700;font-size:54px;line-height:.9;color:var(--c);letter-spacing:-.04em}
+.panel-head small{font-family:var(--f-h);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.panel-head h2{font-size:clamp(20px,2vw,26px);margin-top:4px}
+.panel-head .ill{width:64px;height:64px;margin-left:auto}
+.panel-body{flex:1;min-height:0;padding:16px 24px 22px;display:flex;flex-direction:column;gap:14px}
+.label{font-family:var(--f-h);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.topics{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.topics li{font-size:13.5px;color:var(--muted);line-height:1.35;padding-left:16px;position:relative}
+.topics li::before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--c);opacity:.55}
+.games{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.game{display:flex;align-items:center;gap:16px;padding:16px;border-radius:18px;text-decoration:none;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0b1f45 0%,#0a3c8f 60%,#0055cc 100%);box-shadow:0 14px 30px rgba(0,85,204,.25);transition:transform .25s,box-shadow .25s}
+.game:hover{transform:translateY(-2px);box-shadow:0 18px 36px rgba(0,85,204,.32)}
+.game::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%)}
+.planet{width:58px;height:58px;flex:none;border-radius:50%;position:relative;display:grid;place-items:center;font-family:var(--f-h);font-weight:700;font-size:20px;
+  background:radial-gradient(circle at 32% 28%,#f08a5d 0,#c84800 60%,#7a2b00 100%);box-shadow:inset -6px -8px 14px rgba(0,0,0,.3)}
+.planet::after{content:"";position:absolute;left:-10px;right:-10px;top:50%;height:14px;margin-top:-7px;border-radius:50%;border:2px solid rgba(255,255,255,.6);transform:rotate(-18deg)}
+.game b{display:block;font-family:var(--f-h);font-size:19px}
+.game small{display:block;font-size:13px;opacity:.8;margin-top:2px}
+.game .tag{font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.4);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;opacity:.9}
+.play{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 18px;border-radius:12px;background:#fff;color:var(--blue);font-family:var(--f-h);font-weight:700;white-space:nowrap;position:relative;z-index:1}
+.play svg{width:16px;height:16px}
+.empty{margin-top:auto;display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;border:1.5px dashed color-mix(in srgb,var(--c) 35%,transparent);background:color-mix(in srgb,var(--c) 4%,#fff);color:var(--muted);font-size:14px}
+.empty svg{width:36px;height:36px;flex:none;stroke:var(--c);opacity:.7}
+.empty b{display:block;color:var(--ink);font-family:var(--f-h);font-size:15px}
+.fade{animation:fade .35s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ───────── Responsive ───────── */
+@media (max-height:700px) and (min-width:981px){
+  .unit h3{font-size:14px} .num{font-size:24px} .ill{width:40px;height:40px}
+  .panel-head{padding:16px 22px 14px} .panel-num{font-size:46px} .panel-body{padding:12px 22px 18px;gap:10px}
+  .topics li{font-size:13px}
+  .game{padding:12px 14px} .planet{width:50px;height:50px;font-size:18px}
+}
+@media (max-width:980px),(max-height:540px){
+  body{height:auto;min-height:100dvh;overflow:auto}
+  main{grid-template-columns:1fr}
+  .units{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:minmax(118px,auto)}
+  .meta .chip:last-child{display:none}
+}
+@media (max-width:620px){
+  header{padding:0 16px} main{padding:6px 16px 20px}
+  .units{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .topics{grid-template-columns:1fr}
+  .legend{display:none}
+  .meta{display:none}
+  .game{flex-wrap:wrap} .play{margin-left:0;width:100%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<header class="hero">
-  <svg class="deco" viewBox="-50 -50 100 100" aria-hidden="true">
-    <g fill="none" stroke="#0055cc" stroke-width="1.4">
-      <ellipse rx="44" ry="15"/><ellipse rx="44" ry="15" transform="rotate(60)"/><ellipse rx="44" ry="15" transform="rotate(120)"/>
-    </g>
-    <circle r="8" fill="#0055cc"/><circle cx="44" r="3.5" fill="#c84800"/><circle cx="-22" cy="-38" r="3.5" fill="#167a3b" transform="rotate(0)"/>
-  </svg>
-  <div class="wrap">
-    <span class="kicker">2º ESO</span>
-    <h1>Física y Química</h1>
-    <p>Apuntes, juegos y ejercicios de cada unidad. Elige la unidad y lo que quieras repasar.</p>
-  </div>
+<div class="sky" aria-hidden="true">
+  <span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span>
+  <span class="formula" style="left:4%;top:70%;font-size:54px">H₂O</span>
+  <span class="formula" style="left:46%;top:84%;font-size:40px;--c:#167a3b;animation-delay:-6s">NaCl</span>
+  <span class="formula" style="left:28%;top:6%;font-size:34px;animation-delay:-3s">E = mc²</span>
+  <span class="formula" style="left:62%;top:4%;font-size:30px;--c:#c84800;animation-delay:-11s">F = ma</span>
+  <span class="formula" style="left:85%;top:42%;font-size:44px;animation-delay:-8s">λ</span>
+  <span class="formula" style="left:16%;top:40%;font-size:30px;--c:#167a3b;animation-delay:-14s">Fe₂O₃</span>
+  <span class="formula" style="left:72%;top:76%;font-size:32px;--c:#c84800;animation-delay:-17s">v = λf</span>
+  <div class="big-atom"><svg viewBox="-50 -50 100 100" fill="none" stroke-width="1"><circle r="7" fill="#0055cc" stroke="none"/><ellipse rx="44" ry="15" stroke="#0055cc"/><ellipse rx="44" ry="15" stroke="#167a3b" transform="rotate(60)"/><ellipse rx="44" ry="15" stroke="#c84800" transform="rotate(120)"/></svg></div>
+</div>
+
+<header>
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="#0055cc"/><ellipse cx="16" cy="16" rx="15" ry="5.5" fill="none" stroke="#c84800" stroke-width="2.4" transform="rotate(-20 16 16)"/><circle cx="12.3" cy="12" r="2.8" fill="#fff" opacity=".55"/></svg>
+  <div class="brand"><h1>Science <b>2º ESO</b></h1><p>Physics &amp; Chemistry</p></div>
+  <div class="meta"><span class="chip"><span class="dot"></span>School year 2026–2027</span><span class="chip">11 units</span></div>
 </header>
 
-<main class="wrap">
-  <section class="unit" aria-labelledby="u3">
-    <div class="unit-head"><span class="unit-num">Unidad 3</span><h2 id="u3">The atom</h2></div>
-    <div class="sections">
-      <div class="section">
-        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="12" rx="4"/><path d="M8 11v4M6 13h4M15 12h.01M17 14h.01"/></svg>Juegos</h3>
-        <a class="item" href="juegos/periodic-game.html">
-          <span class="ico" aria-hidden="true">Na</span>
-          <span><b>Periodic game</b><small>Grupos, nombres y símbolos de los elementos representativos</small></span>
-          <span class="go" aria-hidden="true">Jugar →</span>
-        </a>
-      </div>
-      <div class="section">
-        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M8 7h6M8 11h6"/></svg>Apuntes</h3>
-        <p class="soon">Próximamente</p>
-      </div>
-      <div class="section">
-        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Ejercicios</h3>
-        <p class="soon">Próximamente</p>
-      </div>
+<main>
+  <section class="col" aria-labelledby="units-title">
+    <div class="intro">
+      <h2 id="units-title">Explore the units <span>· pick one</span></h2>
+      <div class="legend" aria-hidden="true"><span><i style="background:var(--blue)"></i>Matter &amp; energy</span><span><i style="background:var(--green)"></i>Chemistry</span><span><i style="background:var(--orange)"></i>Physics</span></div>
     </div>
+    <div class="units" id="units" role="group" aria-label="Units"></div>
+  </section>
+  <section class="col" aria-live="polite">
+    <article class="panel" id="panel"></article>
   </section>
 </main>
-<footer>Física y Química · 2º ESO</footer>
+
+<script>
+'use strict';
+/* ───────── Contenido del curso ─────────
+   Para añadir un juego a una unidad, añade un objeto en "games":
+   { title, desc, href, lang }  (href relativo a esta página)                */
+const UNITS = [
+  { n: 1, area: 'gen', title: 'Scientific Activity', topics: ['What is Science.', 'The Scientific Method.'],
+    svg: '<circle cx="30" cy="30" r="18" stroke="#0055cc" stroke-width="2" opacity=".6"/><line x1="44" y1="44" x2="58" y2="58" stroke="#0055cc" stroke-width="3" stroke-linecap="round" opacity=".6"/><circle cx="30" cy="30" r="6" fill="#0055cc" opacity=".35"/><circle cx="30" cy="30" r="12" stroke="#0055cc" stroke-dasharray="3 2" stroke-width="1" opacity=".3"/>' },
+  { n: 2, area: 'gen', title: 'Matter and Its Properties', topics: ['What is matter?', 'Matter at different scales. Scientific notation.', 'Measurement.', 'Conversion of units.', 'Multiples and submultiples.', 'Mass, volume and density.'],
+    svg: '<rect x="10" y="28" width="52" height="28" rx="3" stroke="#0055cc" stroke-width="1.5" fill="rgba(0,85,204,.06)"/><line x1="10" y1="36" x2="62" y2="36" stroke="#0055cc" opacity=".3"/><line x1="10" y1="44" x2="62" y2="44" stroke="#0055cc" opacity=".3"/><text x="14" y="34" font-size="7" fill="#0055cc" opacity=".7" font-weight="bold">m</text><text x="28" y="34" font-size="7" fill="#0055cc" opacity=".6">V</text><text x="42" y="34" font-size="7" fill="#0055cc" opacity=".6">ρ</text><path d="M20 22 Q36 10 52 22" stroke="#0055cc" stroke-width="1.5" opacity=".4"/><circle cx="36" cy="14" r="4" fill="#0055cc" opacity=".3"/>' },
+  { n: 3, area: 'gen', title: 'The Material World: Atoms', topics: ['What is an atom?', 'Electrical phenomena in matter.', 'Subatomic particles.', 'Representing atoms (A, Z, N, e). Isotopes.', 'Periodic table.', 'Organization of atoms in matter.'],
+    svg: '<circle cx="36" cy="36" r="8" fill="#0055cc" opacity=".35"/><ellipse cx="36" cy="36" rx="28" ry="12" stroke="#0055cc" stroke-width="1.5" opacity=".5"><animateTransform attributeName="transform" type="rotate" from="0 36 36" to="360 36 36" dur="6s" repeatCount="indefinite"/></ellipse><ellipse cx="36" cy="36" rx="28" ry="12" stroke="#0055cc" opacity=".3" transform="rotate(60 36 36)"><animateTransform attributeName="transform" type="rotate" from="60 36 36" to="420 36 36" dur="9s" repeatCount="indefinite"/></ellipse><circle cx="36" cy="24" r="4" fill="#0055cc" opacity=".7"><animateTransform attributeName="transform" type="rotate" from="0 36 36" to="360 36 36" dur="6s" repeatCount="indefinite"/></circle>',
+    games: [{ title: 'Periodic game', desc: 'Groups, names and symbols of the main-group elements', href: 'juegos/periodic-game.html', lang: 'ES', icon: 'Na' }] },
+  { n: 4, area: 'gen', title: 'Matter in Nature', topics: ['States of matter and its properties.', 'The Kinetic Theory of matter.', 'Changes of state. Heating and cooling curves.', 'Classification of matter: pure substances, mixtures and colloids.', 'Solutions: types and main parameters. Concentrations.', 'Methods for separating mixtures.'],
+    svg: '<rect x="8" y="48" width="16" height="16" rx="2" fill="#0055cc" opacity=".3" stroke="#0055cc" stroke-width="1.2"/><rect x="12" y="52" width="8" height="8" rx="1" fill="#0055cc" opacity=".25"/><circle cx="36" cy="54" r="8" stroke="#0055cc" stroke-width="1.2" fill="rgba(0,85,204,.08)"/><circle cx="34" cy="52" r="2" fill="#0055cc" opacity=".3"/><circle cx="38" cy="56" r="2" fill="#0055cc" opacity=".25"/><circle cx="56" cy="54" r="3" fill="#0055cc" opacity=".2"/><circle cx="62" cy="48" r="2.5" fill="#0055cc" opacity=".18"/><circle cx="50" cy="60" r="2" fill="#0055cc" opacity=".22"/><circle cx="64" cy="60" r="3.5" fill="#0055cc" opacity=".15"/><path d="M20 40 Q36 30 52 40" stroke="#0055cc" stroke-width="1.2" stroke-dasharray="2 2" opacity=".4"/><path d="M48 37 L52 40 L48 43" stroke="#0055cc" stroke-width="1.2" stroke-linecap="round" opacity=".4"/>' },
+  { n: 5, area: 'gen', title: 'Energy', topics: ['Physical and chemical changes.', 'Energy and heat.', 'Types of energy.', 'Transformations in energy.', 'Energy sources.', 'Non-renewable energy sources.', 'Renewable energy sources.', 'The energy problem.'],
+    svg: '<circle cx="36" cy="36" r="12" fill="#0055cc" opacity=".15" stroke="#0055cc" stroke-width="1.5"/><g stroke="#0055cc" stroke-width="2" stroke-linecap="round"><line x1="36" y1="8" x2="36" y2="16" opacity=".5"/><line x1="36" y1="56" x2="36" y2="64" opacity=".5"/><line x1="8" y1="36" x2="16" y2="36" opacity=".5"/><line x1="56" y1="36" x2="64" y2="36" opacity=".5"/><line x1="16" y1="16" x2="22" y2="22" opacity=".35"/><line x1="50" y1="50" x2="56" y2="56" opacity=".35"/><line x1="56" y1="16" x2="50" y2="22" opacity=".35"/><line x1="22" y1="50" x2="16" y2="56" opacity=".35"/></g><text x="31" y="40" font-size="10" fill="#0055cc" opacity=".8" font-weight="bold">E</text>' },
+  { n: 6, area: 'gen', title: 'Heat and Temperature', topics: ['Thermal energy and changes of state.', 'Temperature. Scales of measurement.', 'Heat and thermal equilibrium. Units.', 'Heat transfer: conduction, convection and radiation.'],
+    svg: '<rect x="30" y="8" width="12" height="42" rx="6" stroke="#0055cc" stroke-width="1.5" fill="rgba(0,85,204,.06)"/><circle cx="36" cy="56" r="10" stroke="#0055cc" stroke-width="1.5" fill="rgba(0,85,204,.1)"/><rect x="33" y="32" width="6" height="22" rx="3" fill="#0055cc" opacity=".4"/><circle cx="36" cy="56" r="6" fill="#0055cc" opacity=".4"/><g stroke="#0055cc"><line x1="42" y1="16" x2="48" y2="16" stroke-width="1.2" opacity=".4"/><line x1="42" y1="24" x2="46" y2="24" opacity=".3"/><line x1="42" y1="32" x2="48" y2="32" stroke-width="1.2" opacity=".4"/><line x1="42" y1="40" x2="46" y2="40" opacity=".3"/></g>' },
+  { n: 7, area: 'chem', title: 'Chemical Changes in Matter', topics: ['Chemical changes: common signs.', 'Chemical equation. Main concepts.', 'Conservation of mass and constant proportion laws.', 'Balance chemical reactions.', 'Calculations in chemical reactions.', 'Energy and rates in chemical reactions.', 'Industrial chemistry and the environment.'],
+    svg: '<text x="6" y="36" font-size="10" fill="#167a3b" opacity=".7" font-weight="bold">A</text><text x="18" y="36" font-size="10" fill="#167a3b" opacity=".5">+</text><text x="28" y="36" font-size="10" fill="#167a3b" opacity=".7" font-weight="bold">B</text><path d="M42 32 L54 32 M50 28 L54 32 L50 36" stroke="#167a3b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/><text x="57" y="36" font-size="10" fill="#167a3b" opacity=".7" font-weight="bold">C</text><circle cx="16" cy="52" r="4" fill="#167a3b" opacity=".25"/><circle cx="36" cy="56" r="6" fill="#167a3b" opacity=".18"/><circle cx="56" cy="52" r="4" fill="#167a3b" opacity=".25"/><circle cx="26" cy="18" r="3" fill="#167a3b" opacity=".2"/><circle cx="48" cy="16" r="5" fill="#167a3b" opacity=".15"/>' },
+  { n: 8, area: 'phys', title: 'Motion', topics: ['Motion around us. General concepts.', 'Speed.', 'Uniform rectilinear motion (URM).', 'Acceleration.', 'Uniform accelerated rectilinear movement (UARM).'],
+    svg: '<path d="M8 52 Q20 30 36 36 Q52 42 64 20" stroke="#c84800" stroke-width="2" stroke-linecap="round"/><path d="M56 14 L64 20 L56 26" stroke="#c84800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 60 Q18 55 22 60 Q26 65 30 60 Q34 55 38 60" stroke="#c84800" stroke-width="1.5" opacity=".5"/><line x1="8" y1="62" x2="14" y2="62" stroke="#c84800" stroke-width="1.5"/><line x1="38" y1="62" x2="48" y2="62" stroke="#c84800" stroke-width="1.5"/><rect x="48" y="58" width="8" height="8" rx="1" stroke="#c84800" stroke-width="1.5" fill="rgba(200,72,0,.12)"/>' },
+  { n: 9, area: 'phys', title: 'Forces and Their Effects', topics: ['Forces. General concepts.', 'Forces and motion.', 'Main forces.'],
+    svg: '<path d="M8 52 Q20 30 36 36 Q52 42 64 20" stroke="#c84800" stroke-width="1.5" stroke-linecap="round" opacity=".35"/><line x1="16" y1="36" x2="56" y2="36" stroke="#c84800" stroke-width="2.5" stroke-linecap="round" opacity=".7"/><path d="M48 28 L56 36 L48 44" stroke="#c84800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/><rect x="10" y="28" width="16" height="16" rx="2" stroke="#c84800" stroke-width="1.5" fill="rgba(200,72,0,.1)"/><text x="14" y="40" font-size="8" fill="#c84800" opacity=".6" font-weight="bold">m</text>' },
+  { n: 10, area: 'phys', title: 'The Universe and Gravity', topics: ['The force of gravity.', "Newton's Law of Universal Gravitation."],
+    svg: '<circle cx="28" cy="36" r="16" stroke="#c84800" stroke-width="1.5" fill="rgba(200,72,0,.07)"/><circle cx="58" cy="24" r="8" stroke="#c84800" stroke-width="1.2" fill="rgba(200,72,0,.05)"/><line x1="44" y1="28" x2="50" y2="28" stroke="#c84800" stroke-width="1.2" stroke-dasharray="2 2" opacity=".5"/><path d="M48 24 L50 28 L48 32" stroke="#c84800" stroke-linecap="round" opacity=".5"/><ellipse cx="28" cy="36" rx="36" ry="14" stroke="#c84800" stroke-dasharray="3 3" opacity=".3"/>' },
+  { n: 11, area: 'phys', title: 'Pressure', topics: ['Pressure. Main concepts.', 'Pressure inside fluids.', 'Atmospheric pressure. Weather maps.', 'Pressure in gases. Gas Laws.'],
+    svg: '<rect x="14" y="20" width="30" height="36" rx="3" stroke="#c84800" stroke-width="1.5" fill="rgba(200,72,0,.06)"/><rect x="14" y="20" width="30" height="12" rx="2" fill="rgba(200,72,0,.2)" stroke="#c84800" stroke-width="1.2"/><line x1="29" y1="8" x2="29" y2="20" stroke="#c84800" stroke-width="2.5" stroke-linecap="round" opacity=".7"/><path d="M52 28 L60 28 M57 24 L60 28 L57 32" stroke="#c84800" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><path d="M52 36 L60 36 M57 32 L60 36 L57 40" stroke="#c84800" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><circle cx="24" cy="40" r="2.5" fill="#c84800" opacity=".25"/><circle cx="34" cy="46" r="2" fill="#c84800" opacity=".2"/><circle cx="20" cy="50" r="2" fill="#c84800" opacity=".22"/><circle cx="36" cy="38" r="2.5" fill="#c84800" opacity=".25"/>' },
+];
+const AREA = { gen: { cls: '', label: 'Matter & energy' }, chem: { cls: 'chem', label: 'Chemistry' }, phys: { cls: 'phys', label: 'Physics' } };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pad = n => String(n).padStart(2, '0');
+const art = (u, still) => `<svg viewBox="0 0 72 72" fill="none" aria-hidden="true">${still ? u.svg.replace(/<animateTransform[^>]*\/>/g, '') : u.svg}</svg>`;
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+const ICON_SOON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="7" width="19" height="12" rx="4"/><path d="M7.5 11v4M5.5 13h4M15 12h.01M17.5 14h.01"/></svg>';
+const nGames = UNITS.reduce((a, u) => a + (u.games || []).length, 0);
+
+const grid = document.getElementById('units'), panel = document.getElementById('panel');
+grid.innerHTML = UNITS.map(u => `
+  <button class="unit ${AREA[u.area].cls}" data-n="${u.n}" aria-pressed="false" aria-label="Unit ${u.n}: ${u.title}${u.games ? ` (${u.games.length} game)` : ''}">
+    <span class="unit-top"><span class="num">${pad(u.n)}</span><span class="ill">${art(u, true)}</span></span>
+    ${u.games ? `<span class="badge">${ICON_PLAY}Game</span>` : ''}
+    <h3>${u.title}</h3>
+  </button>`).join('') + `
+  <div class="unit stats" aria-hidden="true"><div class="stats-row"><div><b>${UNITS.length}</b><span>units</span></div><div><b>${nGames}</b><span>${nGames === 1 ? 'game' : 'games'}</span></div></div><p>New games coming during the year</p></div>`;
+
+function show(n, focusPanel) {
+  const u = UNITS.find(x => x.n === n) || UNITS[0];
+  grid.querySelectorAll('.unit[data-n]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === u.n)));
+  panel.className = 'panel ' + AREA[u.area].cls;
+  panel.innerHTML = `
+    <div class="panel-head fade">
+      <span class="panel-num">${pad(u.n)}</span>
+      <div><small>Unit ${u.n}</small><h2>${u.title}</h2></div>
+      <span class="ill">${art(u, reduced)}</span>
+    </div>
+    <div class="panel-body fade">
+      <div><p class="label">What you will learn</p><ul class="topics">${u.topics.map(t => `<li>${t}</li>`).join('')}</ul></div>
+      ${u.games ? `<div class="games"><p class="label">Games</p>${u.games.map(g => `
+        <a class="game" href="${g.href}">
+          <span class="planet" aria-hidden="true">${g.icon || ''}</span>
+          <span><b>${g.title}${g.lang ? `<span class="tag" title="Game language">${g.lang}</span>` : ''}</b><small>${g.desc}</small></span>
+          <span class="play">${ICON_PLAY}Play</span>
+        </a>`).join('')}</div>`
+      : `<div class="empty">${ICON_SOON}<span><b>Games coming soon</b>New games for this unit will appear here.</span></div>`}
+    </div>`;
+  try { history.replaceState(null, '', '#unit-' + u.n); } catch (e) { /* nada */ }
+  if (focusPanel && matchMedia('(max-width:980px),(max-height:540px)').matches) panel.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+}
+grid.addEventListener('click', e => { const b = e.target.closest('.unit[data-n]'); if (b) show(+b.dataset.n, true); });
+const fromHash = +(location.hash.match(/unit-(\d+)/) || [])[1];
+show(fromHash || (UNITS.find(u => u.games) || UNITS[0]).n);
+</script>
 </body>
 </html>
